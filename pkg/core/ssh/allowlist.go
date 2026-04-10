@@ -25,7 +25,20 @@ var defaultAL = Allowlist{
 	"asm":         setOf("asmcmd", "asmca"),
 	"provision":   setOf("dbca", "netca"),
 	"migration":   setOf("java"),
-	"linux":       setOf("rpm", "dnf", "sysctl", "lvcreate", "lvextend", "pvs", "vgs", "lvs", "df", "free", "uname", "cat", "systemctl"),
+	"linux": setOf(
+		// package management
+		"rpm", "dnf",
+		// kernel
+		"sysctl", "cat", "uname",
+		// storage / LVM
+		"pvs", "vgs", "lvs", "lvcreate", "lvextend", "df", "lsblk", "multipath",
+		// network
+		"ip", "nmcli", "chronyc", "ss",
+		// security
+		"sestatus", "semanage", "firewall-cmd", "authconfig", "systemctl",
+		// common
+		"free",
+	),
 }
 
 // DefaultAllowlist returns a copy of the process-wide allowlist.

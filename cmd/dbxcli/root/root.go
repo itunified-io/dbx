@@ -28,6 +28,7 @@ Commands use named parameters (emcli-style):
 
 	cmd.AddCommand(NewTargetCmd())
 	cmd.AddCommand(NewDBCmd())
+	cmd.AddCommand(NewLinuxCmd())
 	cmd.AddCommand(NewServeCmd())
 	cmd.AddCommand(NewMCPCmd())
 	cmd.AddCommand(NewLicenseCmd())
