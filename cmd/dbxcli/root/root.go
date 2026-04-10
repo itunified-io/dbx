@@ -27,6 +27,7 @@ Commands use named parameters (emcli-style):
 	cmd.PersistentFlags().StringVar(&formatFlag, "format", "table", "output format: table, json, yaml")
 
 	cmd.AddCommand(NewTargetCmd())
+	cmd.AddCommand(NewDBCmd())
 	cmd.AddCommand(NewServeCmd())
 	cmd.AddCommand(NewMCPCmd())
 	cmd.AddCommand(NewLicenseCmd())

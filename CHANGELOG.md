@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## v2026.04.10.2
+
+- feat: Oracle read-only session operations — list, describe, top waiters (#3)
+- feat: Oracle read-only tablespace operations — list, describe, usage summary (#3)
+- feat: Oracle read-only user operations — list, describe, profiles (#3)
+- feat: Oracle read-only schema browser — list, objects, describe (#3)
+- feat: Read-only SQL execution with SELECT-only guard and EXPLAIN PLAN (#3)
+- feat: Oracle redo log operations — list groups, switch history (#3)
+- feat: Oracle undo/rollback operations — list, segment info (#3)
+- feat: Oracle init parameter operations — list, describe, modified, hidden (#3)
+- feat: Oracle advisor operations — segment advisor, SQL tuning list (#3)
+- feat: `db` CLI command group with 9 Oracle subcommands (24 actions) (#3)
+- feat: Shared query helpers (QueryRows, QueryRow) for map[string]any results (#3)
+
 ## v2026.04.10.1
 
 - feat: Cobra CLI skeleton with exported root command for downstream repos (#1)
