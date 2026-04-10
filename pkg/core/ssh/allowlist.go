@@ -23,6 +23,7 @@ var defaultAL = Allowlist{
 	"backup":      setOf("rman"),
 	"clusterware": setOf("crsctl", "srvctl", "olsnodes"),
 	"asm":         setOf("asmcmd", "asmca"),
+	"dataguard":   setOf("dgmgrl"),
 	"provision":   setOf("dbca", "netca"),
 	"migration":   setOf("java"),
 	"linux": setOf(

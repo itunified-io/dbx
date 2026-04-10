@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## v2026.04.10.4
+
+- feat: add `dataguard` SSH domain with `dgmgrl` to default allowlist (#7)
+
 ## v2026.04.10.3
 
 - feat: Oracle Linux package management — rpm list/info, dnf install/update (#5)
