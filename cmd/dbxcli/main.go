@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/itunified-io/dbx/internal/version"
+	"github.com/itunified-io/dbx/cmd/dbxcli/root"
 )
 
+var version = "dev"
+
 func main() {
-	if len(os.Args) > 1 && os.Args[1] == "version" {
-		fmt.Printf("dbxcli %s\n", version.Version)
-		return
+	if err := root.New(version).Execute(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
-	fmt.Fprintln(os.Stderr, "dbxcli: not yet implemented")
-	os.Exit(1)
 }

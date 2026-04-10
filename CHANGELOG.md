@@ -1,3 +1,22 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+
+## v2026.04.10.1
+
+- feat: Cobra CLI skeleton with exported root command for downstream repos (#1)
+- feat: config package — YAML + env var loading with sensible defaults (#1)
+- feat: target model — Oracle + PostgreSQL entity types with YAML parsing (#1)
+- feat: target registry — load from ~/.dbx/targets/, resolve by entity_type (#1)
+- feat: vault client — AppRole fetcher with credential caching and fallback (#1)
+- feat: Ed25519 license validation with 14-day grace period (#1)
+- feat: Oracle license gate — edition/option enforcement (strict/warn/audit-only) (#1)
+- feat: OEM Management Pack gate (#1)
+- feat: confirm gate — echo-back and double-confirm patterns (#1)
+- feat: multi-sink audit trail with redaction (#1)
+- feat: SSH execution with allowlist-based security model (#1)
+- feat: 9-stage execution pipeline orchestrator (#1)
+- feat: output formatter — table, JSON, YAML (#1)
+- feat: REST API skeleton (net/http, /health, /api/v1/version, /api/v1/targets) (#1)
+- feat: MCP adapter skeleton (JSON-RPC stdio, tool registry) (#1)
+- feat: connection manager interface with engine stubs (#1)

@@ -1,15 +1,16 @@
 .PHONY: build build-cli build-ctl test lint clean install
 
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
-LDFLAGS := -ldflags "-X github.com/itunified-io/dbx/internal/version.Version=$(VERSION)"
+LDFLAGS_CLI := -ldflags "-X main.version=$(VERSION)"
+LDFLAGS_CTL := -ldflags "-X github.com/itunified-io/dbx/internal/version.Version=$(VERSION)"
 
 build: build-cli build-ctl
 
 build-cli:
-	go build $(LDFLAGS) -o bin/dbxcli ./cmd/dbxcli
+	go build $(LDFLAGS_CLI) -o bin/dbxcli ./cmd/dbxcli
 
 build-ctl:
-	go build $(LDFLAGS) -o bin/dbxctl ./cmd/dbxctl
+	go build $(LDFLAGS_CTL) -o bin/dbxctl ./cmd/dbxctl
 
 test:
 	go test -race -cover ./...
