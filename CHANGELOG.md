@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## v2026.04.10.3
+
+- feat: Oracle Linux package management — rpm list/info, dnf install/update (#5)
+- feat: Linux kernel parameter management — sysctl list/set, hugepages, OS info (#5)
+- feat: Linux storage/LVM management — pv/vg/lv list, lv create, disk usage (#5)
+- feat: Linux network diagnostics — NIC list, bond status, DNS check, NTP status (#5)
+- feat: Linux security status — SELinux, firewall, service audit (#5)
+- feat: Extended SSH allowlist for P4 commands (ip, nmcli, chronyc, sestatus, firewall-cmd, lsblk) (#5)
+- feat: `linux` CLI command group with 5 subcommands (20 actions) (#5)
+
 ## v2026.04.10.2
 
 - feat: Oracle read-only session operations — list, describe, top waiters (#3)
