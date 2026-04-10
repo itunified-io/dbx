@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## v2026.04.10.6
+
+- feat: `cmd/docgen` — Cobra doc generation for LLM-friendly CLI reference (#9)
+- feat: `make docs` target generates `docs/cli/*.md` (70 files) + `llms.txt` (#9)
+- feat: enrich all OSS commands with `Long` descriptions and `Example` strings (#9)
+- docs: add Documentation Generation section to README.md (#9)
+
 ## v2026.04.10.5
 
 - feat: add `rac` SSH domain with `srvctl` to default allowlist (#8)

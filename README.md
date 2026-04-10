@@ -47,6 +47,26 @@ make build
 | MCP | Layer 1 adapters | AI model integration |
 | Web UI | `dbxctl ui` | Browser-based operations |
 
+## Documentation Generation
+
+dbx auto-generates LLM-friendly CLI documentation from the Cobra command tree using `cobra/doc`.
+
+```bash
+# Generate docs/cli/*.md + llms.txt
+make docs
+
+# Or with custom paths
+go run ./cmd/docgen -out docs/cli -llms llms.txt
+```
+
+**Output:**
+- `docs/cli/*.md` — One Markdown file per command (Cobra doc format, 70+ files)
+- `llms.txt` — Single flat file with all commands, flags, and examples for LLM ingestion
+
+The generated `llms.txt` enables any LLM to understand the complete command surface in a single read. MCP adapters (Layer 1) use these generated descriptions as their tool definitions.
+
+Run `make docs` after adding or modifying commands to keep documentation in sync.
+
 ## License
 
 AGPL-3.0 — see [LICENSE](LICENSE).
