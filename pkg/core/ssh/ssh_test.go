@@ -17,6 +17,7 @@ func TestAllowlistedCommand(t *testing.T) {
 	assert.True(t, exec.IsAllowed("asm", "asmcmd"))
 	assert.True(t, exec.IsAllowed("provision", "dbca"))
 	assert.True(t, exec.IsAllowed("dataguard", "dgmgrl"))
+	assert.True(t, exec.IsAllowed("rac", "srvctl"))
 	assert.True(t, exec.IsAllowed("linux", "rpm"))
 }
 

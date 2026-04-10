@@ -24,6 +24,7 @@ var defaultAL = Allowlist{
 	"clusterware": setOf("crsctl", "srvctl", "olsnodes"),
 	"asm":         setOf("asmcmd", "asmca"),
 	"dataguard":   setOf("dgmgrl"),
+	"rac":         setOf("srvctl"),
 	"provision":   setOf("dbca", "netca"),
 	"migration":   setOf("java"),
 	"linux": setOf(

@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## v2026.04.10.5
+
+- feat: add `rac` SSH domain with `srvctl` to default allowlist (#8)
+
 ## v2026.04.10.4
 
 - feat: add `dataguard` SSH domain with `dgmgrl` to default allowlist (#7)
