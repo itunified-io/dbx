@@ -22,6 +22,7 @@ Commands use named parameters (emcli-style):
 * [dbxcli license](dbxcli_license.md)	 - Manage dbx license
 * [dbxcli linux](dbxcli_linux.md)	 - Oracle Linux host management over SSH
 * [dbxcli mcp](dbxcli_mcp.md)	 - Start MCP server
+* [dbxcli pg](dbxcli_pg.md)	 - PostgreSQL database operations
 * [dbxcli serve](dbxcli_serve.md)	 - Start REST API server
 * [dbxcli target](dbxcli_target.md)	 - Manage system targets
 

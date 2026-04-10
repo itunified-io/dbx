@@ -384,6 +384,956 @@
     dbxcli mcp                  # stdio transport (for Claude Code, IDE extensions)
       dbxcli mcp --port 3001      # SSE transport (for remote MCP clients)
 
+## dbxcli pg
+  PostgreSQL database operations
+  PostgreSQL database operations covering connections, queries, schema browsing,
+  CRUD, DBA, performance, security, replication, high availability, backup,
+  migration, observability, multi-tenancy, WAL, CNPG, disaster recovery,
+  RAG/pgvector, Vault credentials, and policy checks.
+  
+  Requires a target with a PostgreSQL database endpoint configured.
+  Flags:
+    --target  target name (from ~/.dbx/targets/)
+  Inherited Flags:
+    --format  output format: table, json, yaml
+
+## dbxcli pg audit
+  Audit logging
+  PostgreSQL audit logging — pgAudit status, log analysis, and DDL history.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+    --target  target name (from ~/.dbx/targets/)
+
+## dbxcli pg audit ddl-history
+  Show DDL change history
+  Show the history of DDL changes (CREATE, ALTER, DROP) from event triggers or logs.
+  Examples:
+    dbxcli pg audit ddl-history --target prod-pg
+
+## dbxcli pg audit log-analysis
+  Analyze PostgreSQL logs
+  Analyze PostgreSQL server logs for errors, warnings, and patterns.
+  Examples:
+    dbxcli pg audit log-analysis --target prod-pg
+
+## dbxcli pg audit pgaudit-status
+  Show pgAudit configuration
+  Show the current pgAudit extension configuration and logging settings.
+  Examples:
+    dbxcli pg audit pgaudit-status --target prod-pg
+
+## dbxcli pg backup
+  Backup operations
+  PostgreSQL backup operations — pgBackRest and Barman management.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+    --target  target name (from ~/.dbx/targets/)
+
+## dbxcli pg backup barman-status
+  Show Barman backup status
+  Show the current Barman backup status and catalog.
+  Examples:
+    dbxcli pg backup barman-status --target prod-pg
+
+## dbxcli pg backup pgbackrest-backup
+  Trigger pgBackRest backup
+  Trigger a pgBackRest backup of the specified type and stanza.
+  Examples:
+    dbxcli pg backup pgbackrest-backup type=full stanza=main --target prod-pg
+
+## dbxcli pg backup pgbackrest-restore
+  Restore from pgBackRest
+  Restore from a pgBackRest backup with optional point-in-time target.
+  Examples:
+    dbxcli pg backup pgbackrest-restore stanza=main target_time="2026-01-01 12:00:00" --target prod-pg
+
+## dbxcli pg backup pgbackrest-status
+  Show pgBackRest backup status
+  Show the current pgBackRest backup status and history.
+  Examples:
+    dbxcli pg backup pgbackrest-status --target prod-pg
+
+## dbxcli pg cnpg
+  CloudNativePG
+  CloudNativePG cluster management — list, status, promote, restart, backup, and switchover.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+    --target  target name (from ~/.dbx/targets/)
+
+## dbxcli pg cnpg backup-status
+  Show CNPG backup status
+  Show backup status for a CloudNativePG cluster.
+  Examples:
+    dbxcli pg cnpg backup-status name=my-cluster namespace=default --target prod-pg
+
+## dbxcli pg cnpg cluster-status
+  Show CNPG cluster status
+  Show detailed status for a specific CloudNativePG cluster.
+  Examples:
+    dbxcli pg cnpg cluster-status name=my-cluster namespace=default --target prod-pg
+
+## dbxcli pg cnpg clusters
+  List CNPG clusters
+  List all CloudNativePG clusters in the specified namespace.
+  Examples:
+    dbxcli pg cnpg clusters namespace=default --target prod-pg
+
+## dbxcli pg cnpg promote
+  Promote CNPG replica
+  Promote a CloudNativePG replica to primary.
+  Examples:
+    dbxcli pg cnpg promote name=my-cluster namespace=default --target prod-pg
+
+## dbxcli pg cnpg restart
+  Rolling restart CNPG cluster
+  Perform a rolling restart of a CloudNativePG cluster.
+  Examples:
+    dbxcli pg cnpg restart name=my-cluster namespace=default --target prod-pg
+
+## dbxcli pg cnpg switchover
+  Trigger CNPG switchover
+  Trigger a switchover on a CloudNativePG cluster.
+  Examples:
+    dbxcli pg cnpg switchover name=my-cluster namespace=default --target prod-pg
+
+## dbxcli pg comply
+  Compliance checks
+  PostgreSQL compliance checks — CIS benchmarks, password policies, encryption, and privilege audits.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+    --target  target name (from ~/.dbx/targets/)
+
+## dbxcli pg comply cis-benchmark
+  Run CIS benchmark checks
+  Run CIS PostgreSQL benchmark checks against the database.
+  Examples:
+    dbxcli pg comply cis-benchmark --target prod-pg
+
+## dbxcli pg comply encryption-status
+  Check encryption at rest
+  Check the status of data encryption at rest.
+  Examples:
+    dbxcli pg comply encryption-status --target prod-pg
+
+## dbxcli pg comply password-policy
+  Check password policies
+  Check password policy enforcement on all database roles.
+  Examples:
+    dbxcli pg comply password-policy --target prod-pg
+
+## dbxcli pg comply privilege-audit
+  Audit excessive privileges
+  Audit roles for excessive privileges (superuser, CREATEROLE, etc.).
+  Examples:
+    dbxcli pg comply privilege-audit --target prod-pg
+
+## dbxcli pg comply report
+  Generate compliance report
+  Generate a comprehensive compliance report covering all checks.
+  Examples:
+    dbxcli pg comply report --target prod-pg
+
+## dbxcli pg connect
+  PostgreSQL connection management
+  Manage PostgreSQL connection profiles — add, remove, switch, and inspect connections.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+    --target  target name (from ~/.dbx/targets/)
+
+## dbxcli pg connect add
+  Register a new connection profile
+  Register a new PostgreSQL connection profile with host, port, database, and user.
+  Examples:
+    dbxcli pg connect add name=prod host=db01.example.com port=5432 database=app user=admin --target prod-pg
+
+## dbxcli pg connect list
+  List all connection profiles
+  List all registered PostgreSQL connection profiles.
+  Examples:
+    dbxcli pg connect list --target prod-pg
+
+## dbxcli pg connect remove
+  Remove a connection profile
+  Remove an existing PostgreSQL connection profile by name.
+  Examples:
+    dbxcli pg connect remove name=prod --target prod-pg
+
+## dbxcli pg connect status
+  Show current connection status
+  Show the current active PostgreSQL connection status and details.
+  Examples:
+    dbxcli pg connect status --target prod-pg
+
+## dbxcli pg connect switch
+  Switch active connection
+  Switch the active PostgreSQL connection to a different profile.
+  Examples:
+    dbxcli pg connect switch name=staging --target prod-pg
+
+## dbxcli pg crud
+  Data manipulation
+  Insert, update, delete, and upsert rows in PostgreSQL tables.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+    --target  target name (from ~/.dbx/targets/)
+
+## dbxcli pg crud delete
+  Delete rows
+  Delete rows matching the WHERE clause from the specified table.
+  Examples:
+    dbxcli pg crud delete schema=public table=users where="id=1" --target prod-pg
+
+## dbxcli pg crud insert
+  Insert a row
+  Insert a new row into the specified table.
+  Examples:
+    dbxcli pg crud insert schema=public table=users data='{"name":"alice"}' --target prod-pg
+
+## dbxcli pg crud update
+  Update rows
+  Update rows matching the WHERE clause in the specified table.
+  Examples:
+    dbxcli pg crud update schema=public table=users set='{"active":true}' where="id=1" --target prod-pg
+
+## dbxcli pg crud upsert
+  Upsert a row
+  Insert a row or update it on conflict using the specified conflict key.
+  Examples:
+    dbxcli pg crud upsert schema=public table=users data='{"id":1,"name":"alice"}' conflict=id --target prod-pg
+
+## dbxcli pg dba
+  DBA operations
+  PostgreSQL DBA operations — server settings, connections, locks, long queries, and management.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+    --target  target name (from ~/.dbx/targets/)
+
+## dbxcli pg dba blocker-tree
+  Show blocking lock tree
+  Show the blocking lock tree — which sessions block which.
+  Examples:
+    dbxcli pg dba blocker-tree --target prod-pg
+
+## dbxcli pg dba cancel-query
+  Cancel a running query
+  Cancel a running query by backend PID (pg_cancel_backend).
+  Examples:
+    dbxcli pg dba cancel-query pid=12345 --target prod-pg
+
+## dbxcli pg dba connections
+  Show active connections
+  Show all active connections from pg_stat_activity.
+  Examples:
+    dbxcli pg dba connections --target prod-pg
+
+## dbxcli pg dba database-sizes
+  Show database sizes
+  Show the size of each database on the server.
+  Examples:
+    dbxcli pg dba database-sizes --target prod-pg
+
+## dbxcli pg dba locks
+  Show lock information
+  Show current lock information from pg_locks.
+  Examples:
+    dbxcli pg dba locks --target prod-pg
+
+## dbxcli pg dba long-queries
+  Show long-running queries
+  Show queries that have been running longer than the configured threshold.
+  Examples:
+    dbxcli pg dba long-queries --target prod-pg
+
+## dbxcli pg dba reload
+  Reload configuration
+  Reload PostgreSQL server configuration without restart (pg_reload_conf).
+  Examples:
+    dbxcli pg dba reload --target prod-pg
+
+## dbxcli pg dba settings
+  Show server settings
+  Show current PostgreSQL server configuration settings.
+  Examples:
+    dbxcli pg dba settings --target prod-pg
+
+## dbxcli pg dba terminate
+  Terminate a backend
+  Terminate a backend process by PID (pg_terminate_backend).
+  Examples:
+    dbxcli pg dba terminate pid=12345 --target prod-pg
+
+## dbxcli pg dba uptime
+  Show server uptime
+  Show how long the PostgreSQL server has been running.
+  Examples:
+    dbxcli pg dba uptime --target prod-pg
+
+## dbxcli pg dba version
+  Show PostgreSQL version
+  Show the PostgreSQL server version string.
+  Examples:
+    dbxcli pg dba version --target prod-pg
+
+## dbxcli pg dba-adv
+  Advanced DBA operations
+  Advanced PostgreSQL DBA operations — vacuum status, bloat estimation, cache analysis, and unused indexes.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+    --target  target name (from ~/.dbx/targets/)
+
+## dbxcli pg dba-adv cache-hit
+  Show buffer cache hit ratio
+  Show the buffer cache hit ratio from pg_stat_database.
+  Examples:
+    dbxcli pg dba-adv cache-hit --target prod-pg
+
+## dbxcli pg dba-adv index-bloat
+  Estimate index bloat
+  Estimate index bloat across the database.
+  Examples:
+    dbxcli pg dba-adv index-bloat --target prod-pg
+
+## dbxcli pg dba-adv table-bloat
+  Estimate table bloat
+  Estimate table bloat across the database.
+  Examples:
+    dbxcli pg dba-adv table-bloat --target prod-pg
+
+## dbxcli pg dba-adv unused-indexes
+  List unused indexes
+  List indexes with zero or very low scan counts.
+  Examples:
+    dbxcli pg dba-adv unused-indexes --target prod-pg
+
+## dbxcli pg dba-adv vacuum-status
+  Show vacuum status
+  Show autovacuum and manual vacuum status for all tables.
+  Examples:
+    dbxcli pg dba-adv vacuum-status --target prod-pg
+
+## dbxcli pg dr
+  Disaster recovery
+  PostgreSQL disaster recovery — configuration, status, switchover, failover,
+  WAL shipping, MinIO archive, PITR, runbooks, and compliance reporting.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+    --target  target name (from ~/.dbx/targets/)
+
+## dbxcli pg dr config-delete
+  Delete DR configuration
+  Delete a disaster recovery configuration by name.
+  Examples:
+    dbxcli pg dr config-delete name=prod-dr --target prod-pg
+
+## dbxcli pg dr config-get
+  Get DR configuration
+  Get a specific disaster recovery configuration by name.
+  Examples:
+    dbxcli pg dr config-get name=prod-dr --target prod-pg
+
+## dbxcli pg dr config-list
+  List DR configurations
+  List all disaster recovery configurations.
+  Examples:
+    dbxcli pg dr config-list --target prod-pg
+
+## dbxcli pg dr config-set
+  Set DR configuration
+  Create or update a disaster recovery configuration.
+  Examples:
+    dbxcli pg dr config-set name=prod-dr primary=dc1-pg standby=dc2-pg --target prod-pg
+
+## dbxcli pg dr failover
+  Execute DR failover
+  Execute an emergency DR failover to the standby.
+  Examples:
+    dbxcli pg dr failover name=prod-dr --target prod-pg
+
+## dbxcli pg dr minio-status
+  Show MinIO WAL archive status
+  Show the MinIO WAL archive status and bucket health.
+  Examples:
+    dbxcli pg dr minio-status --target prod-pg
+
+## dbxcli pg dr minio-verify
+  Verify MinIO archive integrity
+  Verify the integrity of the MinIO WAL archive.
+  Examples:
+    dbxcli pg dr minio-verify --target prod-pg
+
+## dbxcli pg dr monitor
+  Start continuous DR monitoring
+  Start continuous disaster recovery monitoring for a configuration.
+  Examples:
+    dbxcli pg dr monitor name=prod-dr --target prod-pg
+
+## dbxcli pg dr pitr-restore
+  Point-in-time recovery
+  Perform a point-in-time recovery to a specific timestamp.
+  Examples:
+    dbxcli pg dr pitr-restore name=prod-dr target_time="2026-01-01 12:00:00" --target prod-pg
+
+## dbxcli pg dr pitr-timeline
+  Show PITR timeline
+  Show the PITR timeline and available recovery points.
+  Examples:
+    dbxcli pg dr pitr-timeline name=prod-dr --target prod-pg
+
+## dbxcli pg dr report
+  Generate DR compliance report
+  Generate a disaster recovery compliance report.
+  Examples:
+    dbxcli pg dr report --target prod-pg
+
+## dbxcli pg dr runbook
+  Generate DR runbook
+  Generate a disaster recovery runbook for a configuration.
+  Examples:
+    dbxcli pg dr runbook name=prod-dr --target prod-pg
+
+## dbxcli pg dr status
+  Show DR status
+  Show the current disaster recovery status for a configuration.
+  Examples:
+    dbxcli pg dr status name=prod-dr --target prod-pg
+
+## dbxcli pg dr switchover
+  Execute DR switchover
+  Execute a controlled DR switchover from primary to standby.
+  Examples:
+    dbxcli pg dr switchover name=prod-dr --target prod-pg
+
+## dbxcli pg dr sync-status
+  Show replication sync status
+  Show the replication synchronization status for a DR configuration.
+  Examples:
+    dbxcli pg dr sync-status name=prod-dr --target prod-pg
+
+## dbxcli pg dr test-failover
+  Dry-run failover test
+  Run a dry-run failover test without actually switching over.
+  Examples:
+    dbxcli pg dr test-failover name=prod-dr --target prod-pg
+
+## dbxcli pg dr validate
+  Validate DR setup
+  Validate that the DR setup is correctly configured and operational.
+  Examples:
+    dbxcli pg dr validate name=prod-dr --target prod-pg
+
+## dbxcli pg dr wal-shipping
+  Configure WAL shipping
+  Configure WAL shipping for a DR configuration.
+  Examples:
+    dbxcli pg dr wal-shipping name=prod-dr --target prod-pg
+
+## dbxcli pg ha
+  High availability
+  PostgreSQL high availability — Patroni cluster management, PgBouncer pools, and VIP failover.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+    --target  target name (from ~/.dbx/targets/)
+
+## dbxcli pg ha patroni-config
+  Show Patroni configuration
+  Show the current Patroni DCS configuration.
+  Examples:
+    dbxcli pg ha patroni-config --target prod-pg
+
+## dbxcli pg ha patroni-failover
+  Initiate Patroni failover
+  Initiate a Patroni failover to the specified target node.
+  Examples:
+    dbxcli pg ha patroni-failover target_node=replica1 --target prod-pg
+
+## dbxcli pg ha patroni-restart
+  Restart Patroni member
+  Restart a specific Patroni cluster member.
+  Examples:
+    dbxcli pg ha patroni-restart member=node1 --target prod-pg
+
+## dbxcli pg ha patroni-status
+  Show Patroni cluster status
+  Show the current Patroni cluster status including leader, replicas, and timeline.
+  Examples:
+    dbxcli pg ha patroni-status --target prod-pg
+
+## dbxcli pg ha patroni-switchover
+  Initiate Patroni switchover
+  Initiate a controlled Patroni switchover to the specified target node.
+  Examples:
+    dbxcli pg ha patroni-switchover target_node=replica1 --target prod-pg
+
+## dbxcli pg ha pgbouncer-pause
+  Pause PgBouncer connections
+  Pause all PgBouncer connection pools.
+  Examples:
+    dbxcli pg ha pgbouncer-pause --target prod-pg
+
+## dbxcli pg ha pgbouncer-pools
+  List PgBouncer pools
+  List all PgBouncer connection pools with their configuration.
+  Examples:
+    dbxcli pg ha pgbouncer-pools --target prod-pg
+
+## dbxcli pg ha pgbouncer-resume
+  Resume PgBouncer connections
+  Resume all PgBouncer connection pools.
+  Examples:
+    dbxcli pg ha pgbouncer-resume --target prod-pg
+
+## dbxcli pg ha pgbouncer-status
+  Show PgBouncer pool status
+  Show PgBouncer connection pool status and statistics.
+  Examples:
+    dbxcli pg ha pgbouncer-status --target prod-pg
+
+## dbxcli pg ha vip-status
+  Show VIP failover status
+  Show the virtual IP failover status.
+  Examples:
+    dbxcli pg ha vip-status --target prod-pg
+
+## dbxcli pg health
+  Cluster health
+  Run comprehensive PostgreSQL cluster health checks.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+    --target  target name (from ~/.dbx/targets/)
+
+## dbxcli pg health check
+  Run comprehensive health check
+  Run a comprehensive health check covering connections, replication, locks, and storage.
+  Examples:
+    dbxcli pg health check --target prod-pg
+
+## dbxcli pg migrate
+  Migration operations
+  PostgreSQL migration operations — pg_upgrade, logical migration, and foreign data wrappers.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+    --target  target name (from ~/.dbx/targets/)
+
+## dbxcli pg migrate fdw-setup
+  Setup foreign data wrapper
+  Setup a foreign data wrapper to access a remote server and schema.
+  Examples:
+    dbxcli pg migrate fdw-setup server=remote-db schema=public --target prod-pg
+
+## dbxcli pg migrate logical-migrate
+  Logical migration via pub/sub
+  Perform a logical migration using publication/subscription between source and target.
+  Examples:
+    dbxcli pg migrate logical-migrate source=old-db target=new-db --target prod-pg
+
+## dbxcli pg migrate pg-upgrade-check
+  Pre-check pg_upgrade compatibility
+  Run pg_upgrade compatibility checks without performing the upgrade.
+  Examples:
+    dbxcli pg migrate pg-upgrade-check --target prod-pg
+
+## dbxcli pg migrate pg-upgrade-run
+  Run pg_upgrade
+  Run pg_upgrade from the old version to the new version.
+  Examples:
+    dbxcli pg migrate pg-upgrade-run old_version=15 new_version=16 --target prod-pg
+
+## dbxcli pg observe
+  Observability
+  PostgreSQL observability — Prometheus metrics, slow queries, activity, and background writer stats.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+    --target  target name (from ~/.dbx/targets/)
+
+## dbxcli pg observe metrics
+  Export Prometheus-compatible metrics
+  Export PostgreSQL metrics in Prometheus-compatible format.
+  Examples:
+    dbxcli pg observe metrics --target prod-pg
+
+## dbxcli pg observe slow-log
+  Analyze slow query log
+  Analyze the PostgreSQL slow query log for patterns.
+  Examples:
+    dbxcli pg observe slow-log --target prod-pg
+
+## dbxcli pg observe stat-activity
+  Show pg_stat_activity snapshot
+  Show a snapshot of pg_stat_activity with all backend details.
+  Examples:
+    dbxcli pg observe stat-activity --target prod-pg
+
+## dbxcli pg observe stat-bgwriter
+  Show background writer stats
+  Show background writer statistics from pg_stat_bgwriter.
+  Examples:
+    dbxcli pg observe stat-bgwriter --target prod-pg
+
+## dbxcli pg perf
+  Performance analysis
+  PostgreSQL performance analysis — pg_stat_statements and wait events.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+    --target  target name (from ~/.dbx/targets/)
+
+## dbxcli pg perf stat-statements
+  Show pg_stat_statements top queries
+  Show top queries from pg_stat_statements ordered by total time.
+  Examples:
+    dbxcli pg perf stat-statements --target prod-pg
+
+## dbxcli pg perf wait-events
+  Show wait event statistics
+  Show wait event statistics from pg_stat_activity.
+  Examples:
+    dbxcli pg perf wait-events --target prod-pg
+
+## dbxcli pg policy
+  Policy engine
+  PostgreSQL policy engine — run policy checks and list available policies.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+    --target  target name (from ~/.dbx/targets/)
+
+## dbxcli pg policy check
+  Run policy check against database
+  Run a specific policy check against the target database.
+  Examples:
+    dbxcli pg policy check policy_name=no-superuser-apps --target prod-pg
+
+## dbxcli pg policy list
+  List available policies
+  List all available policies that can be checked against databases.
+  Examples:
+    dbxcli pg policy list --target prod-pg
+
+## dbxcli pg query
+  SQL query execution
+  Execute SQL queries against a PostgreSQL database — SELECT, EXPLAIN, and prepared statements.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+    --target  target name (from ~/.dbx/targets/)
+
+## dbxcli pg query exec
+  Execute a read-only SELECT
+  Execute a read-only SELECT query and return the results.
+  Examples:
+    dbxcli pg query exec query="SELECT * FROM users LIMIT 10" --target prod-pg
+
+## dbxcli pg query explain
+  Generate execution plan
+  Generate an EXPLAIN ANALYZE execution plan for a query.
+  Examples:
+    dbxcli pg query explain query="SELECT * FROM orders WHERE status='pending'" --target prod-pg
+
+## dbxcli pg query prepared
+  Execute a prepared statement
+  Execute a prepared statement by name with the given parameters.
+  Examples:
+    dbxcli pg query prepared name=get_user params="[1]" --target prod-pg
+
+## dbxcli pg rag
+  RAG/pgvector
+  PostgreSQL RAG and pgvector operations — vector collections, similarity search, ingestion, and configuration.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+    --target  target name (from ~/.dbx/targets/)
+
+## dbxcli pg rag collection-create
+  Create vector collection
+  Create a new vector collection with the specified dimensions.
+  Examples:
+    dbxcli pg rag collection-create name=embeddings dimensions=1536 --target prod-pg
+
+## dbxcli pg rag collection-drop
+  Drop vector collection
+  Drop a vector collection and all its data.
+  Examples:
+    dbxcli pg rag collection-drop name=embeddings --target prod-pg
+
+## dbxcli pg rag collections
+  List vector collections
+  List all vector collections (tables with vector columns).
+  Examples:
+    dbxcli pg rag collections --target prod-pg
+
+## dbxcli pg rag config
+  Show pgvector configuration
+  Show the current pgvector extension configuration.
+  Examples:
+    dbxcli pg rag config --target prod-pg
+
+## dbxcli pg rag index-status
+  Show vector index stats
+  Show vector index statistics for a collection.
+  Examples:
+    dbxcli pg rag index-status collection=embeddings --target prod-pg
+
+## dbxcli pg rag ingest
+  Ingest documents
+  Ingest documents into a vector collection from the specified source.
+  Examples:
+    dbxcli pg rag ingest collection=embeddings source=/path/to/docs --target prod-pg
+
+## dbxcli pg rag search
+  Similarity search
+  Perform a similarity search against a vector collection.
+  Examples:
+    dbxcli pg rag search collection=embeddings query="machine learning" limit=10 --target prod-pg
+
+## dbxcli pg rbac
+  Role-based access control
+  PostgreSQL role-based access control — list, grant, revoke, and inspect effective permissions.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+    --target  target name (from ~/.dbx/targets/)
+
+## dbxcli pg rbac effective-perms
+  Show effective permissions
+  Show effective permissions for a role including inherited grants.
+  Examples:
+    dbxcli pg rbac effective-perms role=app_user --target prod-pg
+
+## dbxcli pg rbac grant
+  Grant role or privilege
+  Grant a role or privilege to a target role.
+  Examples:
+    dbxcli pg rbac grant role=readonly target=app_user --target prod-pg
+
+## dbxcli pg rbac list-roles
+  List all roles with members
+  List all roles with their member relationships.
+  Examples:
+    dbxcli pg rbac list-roles --target prod-pg
+
+## dbxcli pg rbac revoke
+  Revoke role or privilege
+  Revoke a role or privilege from a target role.
+  Examples:
+    dbxcli pg rbac revoke role=readonly target=app_user --target prod-pg
+
+## dbxcli pg repl
+  Replication management
+  PostgreSQL replication management — status, slots, lag, and logical subscriptions.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+    --target  target name (from ~/.dbx/targets/)
+
+## dbxcli pg repl lag
+  Show replication lag
+  Show replication lag for all standbys.
+  Examples:
+    dbxcli pg repl lag --target prod-pg
+
+## dbxcli pg repl slots
+  List replication slots
+  List all replication slots with their status and lag.
+  Examples:
+    dbxcli pg repl slots --target prod-pg
+
+## dbxcli pg repl status
+  Show replication status
+  Show the current replication status from pg_stat_replication.
+  Examples:
+    dbxcli pg repl status --target prod-pg
+
+## dbxcli pg repl subscriptions
+  List logical subscriptions
+  List all logical replication subscriptions.
+  Examples:
+    dbxcli pg repl subscriptions --target prod-pg
+
+## dbxcli pg schema
+  Schema browser
+  Browse PostgreSQL schemas, tables, views, functions, types, sequences, indexes, and extensions.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+    --target  target name (from ~/.dbx/targets/)
+
+## dbxcli pg schema extensions
+  List installed extensions
+  List all installed PostgreSQL extensions.
+  Examples:
+    dbxcli pg schema extensions --target prod-pg
+
+## dbxcli pg schema functions
+  List functions
+  List all functions in the specified schema.
+  Examples:
+    dbxcli pg schema functions schema=public --target prod-pg
+
+## dbxcli pg schema indexes
+  List indexes
+  List all indexes for a table in the specified schema.
+  Examples:
+    dbxcli pg schema indexes schema=public table=users --target prod-pg
+
+## dbxcli pg schema schemas
+  List schemas
+  List all schemas in the database.
+  Examples:
+    dbxcli pg schema schemas --target prod-pg
+
+## dbxcli pg schema sequences
+  List sequences
+  List all sequences in the specified schema.
+  Examples:
+    dbxcli pg schema sequences schema=public --target prod-pg
+
+## dbxcli pg schema table-describe
+  Describe a table
+  Show column details, constraints, and metadata for a specific table.
+  Examples:
+    dbxcli pg schema table-describe schema=public table=users --target prod-pg
+
+## dbxcli pg schema tables
+  List tables
+  List all tables in the specified schema.
+  Examples:
+    dbxcli pg schema tables schema=public --target prod-pg
+
+## dbxcli pg schema types
+  List custom types
+  List all custom types in the specified schema.
+  Examples:
+    dbxcli pg schema types schema=public --target prod-pg
+
+## dbxcli pg schema views
+  List views
+  List all views in the specified schema.
+  Examples:
+    dbxcli pg schema views schema=public --target prod-pg
+
+## dbxcli pg security
+  Security audit
+  PostgreSQL security audit — roles, row-level security, SSL, and pg_hba.conf.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+    --target  target name (from ~/.dbx/targets/)
+
+## dbxcli pg security pg-hba
+  Parse pg_hba.conf rules
+  Parse and display the active pg_hba.conf authentication rules.
+  Examples:
+    dbxcli pg security pg-hba --target prod-pg
+
+## dbxcli pg security roles
+  List roles and privileges
+  List all PostgreSQL roles with their privileges and membership.
+  Examples:
+    dbxcli pg security roles --target prod-pg
+
+## dbxcli pg security row-security
+  Show row-level security policies
+  Show all row-level security (RLS) policies defined on tables.
+  Examples:
+    dbxcli pg security row-security --target prod-pg
+
+## dbxcli pg security ssl-status
+  Show SSL/TLS connection status
+  Show SSL/TLS connection status for all active connections.
+  Examples:
+    dbxcli pg security ssl-status --target prod-pg
+
+## dbxcli pg tenant
+  Multi-tenant management
+  PostgreSQL multi-tenant management — provision, deprovision, list, migrate, and check tenant databases.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+    --target  target name (from ~/.dbx/targets/)
+
+## dbxcli pg tenant deprovision
+  Remove tenant database
+  Remove a tenant database and all associated resources.
+  Examples:
+    dbxcli pg tenant deprovision tenant_id=acme-corp --target prod-pg
+
+## dbxcli pg tenant list
+  List tenant databases
+  List all tenant databases with their status and metadata.
+  Examples:
+    dbxcli pg tenant list --target prod-pg
+
+## dbxcli pg tenant migrate
+  Run tenant schema migration
+  Run schema migrations on a specific tenant database.
+  Examples:
+    dbxcli pg tenant migrate tenant_id=acme-corp --target prod-pg
+
+## dbxcli pg tenant provision
+  Provision new tenant database
+  Provision a new tenant database with schema and role setup.
+  Examples:
+    dbxcli pg tenant provision tenant_id=acme-corp --target prod-pg
+
+## dbxcli pg tenant status
+  Show tenant health status
+  Show health status for a specific tenant database.
+  Examples:
+    dbxcli pg tenant status tenant_id=acme-corp --target prod-pg
+
+## dbxcli pg vault
+  Vault credential management
+  HashiCorp Vault integration for PostgreSQL credential rotation, leases, and revocation.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+    --target  target name (from ~/.dbx/targets/)
+
+## dbxcli pg vault revoke
+  Revoke database credentials
+  Revoke a Vault database credential lease by ID.
+  Examples:
+    dbxcli pg vault revoke lease_id=database/creds/app-readonly/abc123 --target prod-pg
+
+## dbxcli pg vault rotate
+  Rotate database credentials
+  Rotate database credentials for the specified Vault role.
+  Examples:
+    dbxcli pg vault rotate role=app-readonly --target prod-pg
+
+## dbxcli pg vault status
+  Show Vault lease status
+  Show the current Vault lease status for database credentials.
+  Examples:
+    dbxcli pg vault status --target prod-pg
+
+## dbxcli pg wal
+  WAL management
+  PostgreSQL WAL (Write-Ahead Log) management — status, archiving, size, retention, and replay lag.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+    --target  target name (from ~/.dbx/targets/)
+
+## dbxcli pg wal archive-status
+  Check WAL archiving status
+  Check the WAL archiving status and any failures.
+  Examples:
+    dbxcli pg wal archive-status --target prod-pg
+
+## dbxcli pg wal replay-lag
+  Show WAL replay lag on standbys
+  Show WAL replay lag on all standby servers.
+  Examples:
+    dbxcli pg wal replay-lag --target prod-pg
+
+## dbxcli pg wal retention
+  Show WAL retention policy
+  Show the configured WAL retention policy and current usage.
+  Examples:
+    dbxcli pg wal retention --target prod-pg
+
+## dbxcli pg wal size
+  Show WAL directory size
+  Show the current WAL directory size on disk.
+  Examples:
+    dbxcli pg wal size --target prod-pg
+
+## dbxcli pg wal status
+  Show WAL generation stats
+  Show WAL generation statistics and current LSN.
+  Examples:
+    dbxcli pg wal status --target prod-pg
+
 ## dbxcli serve
   Start REST API server
   Start the dbx REST API server. Routes are auto-generated from the Cobra command tree.
