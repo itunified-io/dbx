@@ -32,10 +32,13 @@ func newLinuxPackageCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "package",
 		Short: "RPM/DNF package management",
+		Long:  `RPM package queries and DNF install/update operations via SSH (rpm, dnf commands).`,
 	}
 	cmd.AddCommand(&cobra.Command{
-		Use:   "list",
-		Short: "List installed RPM packages",
+		Use:     "list",
+		Short:   "List installed RPM packages",
+		Long:    `List all installed RPM packages with version and architecture.`,
+		Example: `  dbxcli linux package list --target web01`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			target, _ := cmd.Flags().GetString("target")
 			fmt.Printf("linux package list (target=%s)\n", target)
@@ -43,9 +46,11 @@ func newLinuxPackageCmd() *cobra.Command {
 		},
 	})
 	cmd.AddCommand(&cobra.Command{
-		Use:   "info",
-		Short: "Show package details",
-		Args:  cobra.MinimumNArgs(1),
+		Use:     "info",
+		Short:   "Show package details",
+		Long:    `Show detailed information for a specific RPM package.`,
+		Example: `  dbxcli linux package info name=oracle-database-ee-19c --target db01`,
+		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			params, err := ParseNamedParams(args)
 			if err != nil {
@@ -57,9 +62,11 @@ func newLinuxPackageCmd() *cobra.Command {
 		},
 	})
 	cmd.AddCommand(&cobra.Command{
-		Use:   "install",
-		Short: "Install a package via DNF (confirm-gated)",
-		Args:  cobra.MinimumNArgs(1),
+		Use:     "install",
+		Short:   "Install a package via DNF (confirm-gated)",
+		Long:    `Install a package using dnf. Requires confirmation before execution.`,
+		Example: `  dbxcli linux package install name=oracle-database-preinstall-19c --target db01`,
+		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			params, err := ParseNamedParams(args)
 			if err != nil {
@@ -71,9 +78,11 @@ func newLinuxPackageCmd() *cobra.Command {
 		},
 	})
 	cmd.AddCommand(&cobra.Command{
-		Use:   "update",
-		Short: "Update a package via DNF (confirm-gated)",
-		Args:  cobra.MinimumNArgs(1),
+		Use:     "update",
+		Short:   "Update a package via DNF (confirm-gated)",
+		Long:    `Update a package using dnf. Requires confirmation before execution.`,
+		Example: `  dbxcli linux package update name=oracle-database-preinstall-19c --target db01`,
+		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			params, err := ParseNamedParams(args)
 			if err != nil {
@@ -91,6 +100,7 @@ func newLinuxKernelCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "kernel",
 		Short: "Kernel parameter management",
+		Long:  `Kernel parameter management via sysctl and /proc filesystem over SSH.`,
 	}
 	cmd.AddCommand(&cobra.Command{
 		Use:   "param-list",
@@ -145,6 +155,7 @@ func newLinuxStorageCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "storage",
 		Short: "Storage and LVM management",
+		Long:  `Linux storage and LVM management via pvs/vgs/lvs, lvcreate, df, lsblk over SSH.`,
 	}
 	cmd.AddCommand(&cobra.Command{
 		Use:   "pv-list",
@@ -203,6 +214,7 @@ func newLinuxNetworkCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "network",
 		Short: "Network diagnostics",
+		Long:  `Network diagnostics via ip, nmcli, chronyc, and ss over SSH.`,
 	}
 	cmd.AddCommand(&cobra.Command{
 		Use:   "nic-list",
@@ -247,6 +259,7 @@ func newLinuxSecurityCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "security",
 		Short: "Security status checks",
+		Long:  `Security status checks: SELinux, firewall rules, and running services over SSH.`,
 	}
 	cmd.AddCommand(&cobra.Command{
 		Use:   "selinux-status",

@@ -54,11 +54,16 @@ func NewTargetCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "target",
 		Short: "Manage system targets",
+		Long: `Manage the target registry — databases, hosts, and services that dbx connects to.
+Targets are stored in ~/.dbx/targets/ as YAML files.`,
 	}
 	cmd.AddCommand(&cobra.Command{
 		Use:   "list",
 		Short: "List registered targets",
-		Args:  cobra.ArbitraryArgs,
+		Long:  `List all registered targets with their type, host, and connection status.`,
+		Example: `  dbxcli target list
+  dbxcli target list entity_type=oracle_db`,
+		Args: cobra.ArbitraryArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			params, err := ParseNamedParams(args)
 			if err != nil {
@@ -71,7 +76,10 @@ func NewTargetCmd() *cobra.Command {
 	cmd.AddCommand(&cobra.Command{
 		Use:   "add",
 		Short: "Register a new target",
-		Args:  cobra.MinimumNArgs(2),
+		Long:  `Register a new target (database, host, or service) in the target registry.`,
+		Example: `  dbxcli target add entity_name=prod-db entity_type=oracle_db host=db01.example.com port=1521 service=ORCL
+  dbxcli target add entity_name=web01 entity_type=oracle_host host=web01.example.com`,
+		Args: cobra.MinimumNArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			params, err := ParseNamedParams(args)
 			if err != nil {
@@ -87,7 +95,9 @@ func NewTargetCmd() *cobra.Command {
 	cmd.AddCommand(&cobra.Command{
 		Use:   "test",
 		Short: "Test connectivity to a target",
-		Args:  cobra.MinimumNArgs(1),
+		Long:  `Test network and authentication connectivity to a registered target.`,
+		Example: `  dbxcli target test entity_name=prod-db`,
+		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			params, err := ParseNamedParams(args)
 			if err != nil {
@@ -108,6 +118,10 @@ func NewServeCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "serve",
 		Short: "Start REST API server",
+		Long: `Start the dbx REST API server. Routes are auto-generated from the Cobra command tree.
+The API exposes all CLI operations as HTTP endpoints with JWT authentication.`,
+		Example: `  dbxcli serve
+  dbxcli serve --port 9090 --auth-mode basic`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			fmt.Printf("REST API server starting on :%d (auth: %s)\n", port, authMode)
 			return nil
@@ -125,6 +139,10 @@ func NewMCPCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "mcp",
 		Short: "Start MCP server",
+		Long: `Start the dbx MCP (Model Context Protocol) server for AI integration.
+Supports stdio transport (default) and SSE transport for remote connections.`,
+		Example: `  dbxcli mcp                  # stdio transport (for Claude Code, IDE extensions)
+  dbxcli mcp --port 3001      # SSE transport (for remote MCP clients)`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if port > 0 {
 				fmt.Printf("MCP SSE server starting on :%d\n", port)
@@ -143,18 +161,24 @@ func NewLicenseCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "license",
 		Short: "Manage dbx license",
+		Long: `Manage the dbx license. Licenses are Ed25519-signed JWT tokens stored at ~/.dbx/license.jwt.
+Without a license, only OSS (Community) features are available.`,
 	}
 	cmd.AddCommand(&cobra.Command{
-		Use:   "status",
-		Short: "Show license status",
+		Use:     "status",
+		Short:   "Show license status",
+		Long:    `Show current license status including tier, entity count, expiry date, and grace period.`,
+		Example: `  dbxcli license status`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			fmt.Println("license: OSS (no license file)")
 			return nil
 		},
 	})
 	activateCmd := &cobra.Command{
-		Use:   "activate",
-		Short: "Activate a license file",
+		Use:     "activate",
+		Short:   "Activate a license file",
+		Long:    `Activate a license JWT file. The file is validated, copied to ~/.dbx/license.jwt, and EE features are unlocked.`,
+		Example: `  dbxcli license activate --file /path/to/license.jwt`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			file, _ := cmd.Flags().GetString("file")
 			fmt.Printf("activating license from %s\n", file)

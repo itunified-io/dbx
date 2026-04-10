@@ -1,4 +1,4 @@
-.PHONY: build build-cli build-ctl test lint clean install
+.PHONY: build build-cli build-ctl test lint clean install docs
 
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 LDFLAGS_CLI := -ldflags "-X main.version=$(VERSION)"
@@ -17,6 +17,10 @@ test:
 
 lint:
 	golangci-lint run ./...
+
+docs:
+	@rm -rf docs/cli/
+	go run ./cmd/docgen
 
 clean:
 	rm -rf bin/ dist/

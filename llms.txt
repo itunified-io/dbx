@@ -1,0 +1,424 @@
+# dbx CLI Reference
+# Auto-generated — do not edit manually.
+# Source: go run ./cmd/docgen
+
+## dbxcli
+  dbx — multi-database management platform
+  dbx is a multi-database management platform supporting Oracle and PostgreSQL.
+  
+  Commands use named parameters (emcli-style):
+    dbxcli <domain> <action> entity_name=<name> entity_type=<type> [key=value ...]
+  Flags:
+    --format  output format: table, json, yaml (default: table)
+
+## dbxcli db
+  Oracle database read-only operations
+  Read-only Oracle database operations covering sessions, tablespaces,
+  users, schemas, SQL execution, redo logs, undo, parameters, and advisors.
+  
+  Requires a target with an Oracle database endpoint configured.
+  Flags:
+    --target  target name (from ~/.dbx/targets/)
+  Inherited Flags:
+    --format  output format: table, json, yaml
+
+## dbxcli db advisor
+  Oracle advisor operations
+  Query Oracle built-in advisor recommendations (DBA_ADVISOR_RECOMMENDATIONS). Read-only.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+    --target  target name (from ~/.dbx/targets/)
+
+## dbxcli db advisor segment
+  Show segment advisor recommendations
+  Show segment advisor recommendations for table/index shrink, compression, and space reclamation.
+  Examples:
+    dbxcli db advisor segment --target prod-db
+
+## dbxcli db advisor sql-tuning
+  List SQL tuning advisor tasks
+  List SQL tuning advisor tasks and their recommendations (DBA_ADVISOR_TASKS).
+  Examples:
+    dbxcli db advisor sql-tuning --target prod-db
+
+## dbxcli db parameter
+  Oracle init parameter operations
+  Query Oracle initialization parameters (V$PARAMETER, V$SYSTEM_PARAMETER). Read-only — use EE for SET/RESET.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+    --target  target name (from ~/.dbx/targets/)
+
+## dbxcli db parameter describe
+  Describe a specific parameter
+  Show full details for a parameter including description, default, range, and whether it requires restart.
+  Examples:
+    dbxcli db parameter describe name=sga_target --target prod-db
+
+## dbxcli db parameter hidden
+  List hidden underscore parameters
+  List hidden (underscore-prefixed) parameters. Use with caution — these are unsupported by Oracle.
+  Examples:
+    dbxcli db parameter hidden --target prod-db
+
+## dbxcli db parameter list
+  List all visible parameters
+  List all non-hidden initialization parameters with current values and whether they are modified.
+  Examples:
+    dbxcli db parameter list --target prod-db
+      dbxcli db parameter list --target prod-db --format json
+
+## dbxcli db parameter modified
+  List non-default parameters
+  List only parameters that have been changed from their default values.
+  Examples:
+    dbxcli db parameter modified --target prod-db
+
+## dbxcli db redo
+  Oracle redo log operations
+  Query Oracle redo log groups and switch history (V$LOG, V$LOG_HISTORY). Read-only.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+    --target  target name (from ~/.dbx/targets/)
+
+## dbxcli db redo list
+  List redo log groups
+  List all redo log groups with status, size, member count, and sequence number.
+  Examples:
+    dbxcli db redo list --target prod-db
+
+## dbxcli db redo switch-history
+  Show log switch frequency
+  Show redo log switch frequency per hour — useful for sizing redo logs.
+  Examples:
+    dbxcli db redo switch-history --target prod-db
+
+## dbxcli db schema
+  Oracle schema browser
+  Browse Oracle schemas and their objects (DBA_OBJECTS, DBA_TABLES, DBA_INDEXES). Read-only.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+    --target  target name (from ~/.dbx/targets/)
+
+## dbxcli db schema describe
+  Describe a specific object
+  Show DDL and metadata for a specific database object (table, index, view, package, etc.).
+  Examples:
+    dbxcli db schema describe owner=HR object_name=EMPLOYEES --target prod-db
+
+## dbxcli db schema list
+  List schemas with object counts
+  List all schemas with counts of tables, indexes, views, packages, and other objects.
+  Examples:
+    dbxcli db schema list --target prod-db
+
+## dbxcli db schema objects
+  List objects in a schema
+  List all objects in a given schema filtered by object type.
+  Examples:
+    dbxcli db schema objects owner=HR --target prod-db
+      dbxcli db schema objects owner=HR object_type=TABLE --target prod-db
+
+## dbxcli db session
+  Oracle session operations
+  Query and inspect Oracle database sessions (V$SESSION). Read-only — no session modification.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+    --target  target name (from ~/.dbx/targets/)
+
+## dbxcli db session describe
+  Describe a session by SID
+  Show detailed information for a specific session including SQL, wait event, and program.
+  Examples:
+    dbxcli db session describe sid=142 --target prod-db
+
+## dbxcli db session list
+  List active user sessions
+  List all active user sessions from V$SESSION excluding background processes.
+  Examples:
+    dbxcli db session list --target prod-db
+      dbxcli db session list --target prod-db --format json
+
+## dbxcli db session top-waiters
+  Show top sessions by wait time
+  Show sessions with the highest cumulative wait time, useful for identifying performance bottlenecks.
+  Examples:
+    dbxcli db session top-waiters --target prod-db
+
+## dbxcli db sql
+  Read-only SQL execution
+  Execute read-only SQL statements against an Oracle database.
+  Only SELECT statements are permitted — DML/DDL is blocked by the ReadOnlyGuard.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+    --target  target name (from ~/.dbx/targets/)
+
+## dbxcli db sql exec
+  Execute a read-only SELECT statement
+  Execute a SELECT query and return results. DML/DDL statements are rejected.
+  Examples:
+    dbxcli db sql exec query="SELECT sysdate FROM dual" --target prod-db
+      dbxcli db sql exec query="SELECT username, account_status FROM dba_users" --target prod-db --format json
+
+## dbxcli db sql explain
+  Generate execution plan for a SELECT
+  Generate EXPLAIN PLAN output for a SELECT statement without executing it.
+  Examples:
+    dbxcli db sql explain query="SELECT * FROM hr.employees WHERE department_id = 10" --target prod-db
+
+## dbxcli db tablespace
+  Oracle tablespace operations
+  Query Oracle tablespace metadata, usage metrics, and datafile details (DBA_TABLESPACES, DBA_DATA_FILES). Read-only.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+    --target  target name (from ~/.dbx/targets/)
+
+## dbxcli db tablespace describe
+  Describe tablespace datafiles
+  Show datafiles belonging to a tablespace with sizes, autoextend status, and paths.
+  Examples:
+    dbxcli db tablespace describe name=USERS --target prod-db
+
+## dbxcli db tablespace list
+  List tablespaces with usage metrics
+  List all tablespaces with total size, used space, free space, and percentage utilization.
+  Examples:
+    dbxcli db tablespace list --target prod-db
+      dbxcli db tablespace list --target prod-db --format json
+
+## dbxcli db tablespace usage
+  Show aggregated tablespace usage summary
+  Show aggregated storage utilization across all tablespaces with alert thresholds.
+  Examples:
+    dbxcli db tablespace usage --target prod-db
+
+## dbxcli db undo
+  Oracle undo/rollback operations
+  Query Oracle undo tablespace usage and rollback segment details (V$UNDOSTAT, DBA_UNDO_EXTENTS). Read-only.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+    --target  target name (from ~/.dbx/targets/)
+
+## dbxcli db undo list
+  List undo tablespace usage
+  Show undo tablespace utilization including active, unexpired, and expired extents.
+  Examples:
+    dbxcli db undo list --target prod-db
+
+## dbxcli db undo segments
+  Show undo segment details
+  Show individual rollback segment status, size, and transaction counts.
+  Examples:
+    dbxcli db undo segments --target prod-db
+
+## dbxcli db user
+  Oracle user operations
+  Query Oracle database users, roles, privileges, and profiles (DBA_USERS, DBA_ROLE_PRIVS). Read-only.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+    --target  target name (from ~/.dbx/targets/)
+
+## dbxcli db user describe
+  Describe user with roles and privileges
+  Show detailed user information including granted roles, system/object privileges, and quotas.
+  Examples:
+    dbxcli db user describe username=SCOTT --target prod-db
+
+## dbxcli db user list
+  List database users
+  List all database users with account status, default tablespace, and profile.
+  Examples:
+    dbxcli db user list --target prod-db
+
+## dbxcli db user profiles
+  List database profiles
+  List all database profiles with their resource limits and password parameters.
+  Examples:
+    dbxcli db user profiles --target prod-db
+
+## dbxcli license
+  Manage dbx license
+  Manage the dbx license. Licenses are Ed25519-signed JWT tokens stored at ~/.dbx/license.jwt.
+  Without a license, only OSS (Community) features are available.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+
+## dbxcli license activate
+  Activate a license file
+  Activate a license JWT file. The file is validated, copied to ~/.dbx/license.jwt, and EE features are unlocked.
+  Flags:
+    --file  path to license JWT file
+  Examples:
+    dbxcli license activate --file /path/to/license.jwt
+
+## dbxcli license status
+  Show license status
+  Show current license status including tier, entity count, expiry date, and grace period.
+  Examples:
+    dbxcli license status
+
+## dbxcli linux
+  Oracle Linux host management over SSH
+  Oracle Linux system management operations executed over SSH.
+  Covers package management, kernel parameters, storage/LVM, network, and security.
+  
+  Requires a target with SSH endpoint configured (oracle_host entity_type).
+  Flags:
+    --target  target name (from ~/.dbx/targets/)
+  Inherited Flags:
+    --format  output format: table, json, yaml
+
+## dbxcli linux kernel
+  Kernel parameter management
+  Kernel parameter management via sysctl and /proc filesystem over SSH.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+    --target  target name (from ~/.dbx/targets/)
+
+## dbxcli linux kernel hugepages
+  Set hugepages count (confirm-gated)
+
+## dbxcli linux kernel info
+  Show OS/kernel info (uname)
+
+## dbxcli linux kernel param-list
+  List all sysctl parameters
+
+## dbxcli linux kernel param-set
+  Set a sysctl parameter (confirm-gated)
+
+## dbxcli linux network
+  Network diagnostics
+  Network diagnostics via ip, nmcli, chronyc, and ss over SSH.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+    --target  target name (from ~/.dbx/targets/)
+
+## dbxcli linux network bond-status
+  Show network bond status
+
+## dbxcli linux network dns-check
+  Check DNS resolver configuration
+
+## dbxcli linux network nic-list
+  List NICs with addresses
+
+## dbxcli linux network ntp-status
+  Check NTP synchronization
+
+## dbxcli linux package
+  RPM/DNF package management
+  RPM package queries and DNF install/update operations via SSH (rpm, dnf commands).
+  Inherited Flags:
+    --format  output format: table, json, yaml
+    --target  target name (from ~/.dbx/targets/)
+
+## dbxcli linux package info
+  Show package details
+  Show detailed information for a specific RPM package.
+  Examples:
+    dbxcli linux package info name=oracle-database-ee-19c --target db01
+
+## dbxcli linux package install
+  Install a package via DNF (confirm-gated)
+  Install a package using dnf. Requires confirmation before execution.
+  Examples:
+    dbxcli linux package install name=oracle-database-preinstall-19c --target db01
+
+## dbxcli linux package list
+  List installed RPM packages
+  List all installed RPM packages with version and architecture.
+  Examples:
+    dbxcli linux package list --target web01
+
+## dbxcli linux package update
+  Update a package via DNF (confirm-gated)
+  Update a package using dnf. Requires confirmation before execution.
+  Examples:
+    dbxcli linux package update name=oracle-database-preinstall-19c --target db01
+
+## dbxcli linux security
+  Security status checks
+  Security status checks: SELinux, firewall rules, and running services over SSH.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+    --target  target name (from ~/.dbx/targets/)
+
+## dbxcli linux security firewall-list
+  List firewall rules
+
+## dbxcli linux security selinux-status
+  Check SELinux status
+
+## dbxcli linux security service-status
+  List running services
+
+## dbxcli linux storage
+  Storage and LVM management
+  Linux storage and LVM management via pvs/vgs/lvs, lvcreate, df, lsblk over SSH.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+    --target  target name (from ~/.dbx/targets/)
+
+## dbxcli linux storage disk-usage
+  Show disk usage
+
+## dbxcli linux storage lv-create
+  Create a logical volume (confirm-gated)
+
+## dbxcli linux storage lv-list
+  List logical volumes
+
+## dbxcli linux storage pv-list
+  List physical volumes
+
+## dbxcli linux storage vg-list
+  List volume groups
+
+## dbxcli mcp
+  Start MCP server
+  Start the dbx MCP (Model Context Protocol) server for AI integration.
+  Supports stdio transport (default) and SSE transport for remote connections.
+  Flags:
+    --port  SSE transport port (0 = stdio) (default: 0)
+  Examples:
+    dbxcli mcp                  # stdio transport (for Claude Code, IDE extensions)
+      dbxcli mcp --port 3001      # SSE transport (for remote MCP clients)
+
+## dbxcli serve
+  Start REST API server
+  Start the dbx REST API server. Routes are auto-generated from the Cobra command tree.
+  The API exposes all CLI operations as HTTP endpoints with JWT authentication.
+  Flags:
+    --auth-mode  auth mode: jwt, basic, none (default: jwt)
+    --port  listen port (default: 8080)
+  Examples:
+    dbxcli serve
+      dbxcli serve --port 9090 --auth-mode basic
+
+## dbxcli target
+  Manage system targets
+  Manage the target registry — databases, hosts, and services that dbx connects to.
+  Targets are stored in ~/.dbx/targets/ as YAML files.
+  Inherited Flags:
+    --format  output format: table, json, yaml
+
+## dbxcli target add
+  Register a new target
+  Register a new target (database, host, or service) in the target registry.
+  Examples:
+    dbxcli target add entity_name=prod-db entity_type=oracle_db host=db01.example.com port=1521 service=ORCL
+      dbxcli target add entity_name=web01 entity_type=oracle_host host=web01.example.com
+
+## dbxcli target list
+  List registered targets
+  List all registered targets with their type, host, and connection status.
+  Examples:
+    dbxcli target list
+      dbxcli target list entity_type=oracle_db
+
+## dbxcli target test
+  Test connectivity to a target
+  Test network and authentication connectivity to a registered target.
+  Examples:
+    dbxcli target test entity_name=prod-db
+
