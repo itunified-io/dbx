@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file.
 
+## v2026.04.10.7
+
+- feat: PostgreSQL connection management — connect, disconnect, pool status, connection info, test (#11)
+- feat: PostgreSQL query execution — run, explain, prepared statements (#11)
+- feat: PostgreSQL schema browser — list databases/schemas/tables/views/indexes/functions/triggers/sequences/extensions (#11)
+- feat: PostgreSQL CRUD operations — insert, update, delete, upsert (#11)
+- feat: PostgreSQL DBA operations — vacuum, analyze, reindex, bloat, locks, activity, config, tablespace, stats reset, kill, maintenance (#11)
+- feat: PostgreSQL advanced DBA — pg_stat_statements, index advisor, table partitioning, connection pooler, custom GUC (#11)
+- feat: PostgreSQL performance — slow queries, cache hit ratio (#11)
+- feat: PostgreSQL health check — comprehensive cluster health (#11)
+- feat: PostgreSQL security — SSL status, pg_hba rules, password policy, role audit (#11)
+- feat: PostgreSQL audit logging — pgaudit status/config/log query (#11)
+- feat: PostgreSQL compliance — CIS benchmarks, GDPR audit, data classification, retention policy, encryption status (#11)
+- feat: PostgreSQL RBAC — role list/grant/revoke, privilege audit (#11)
+- feat: PostgreSQL replication — streaming status, slots, lag monitor, switchover (#11)
+- feat: PostgreSQL HA — Patroni status/switchover/reinit/restart, pgBouncer, HAProxy health, connection routing, failover test, split brain, witness, timeline (#11)
+- feat: PostgreSQL backup — pg_basebackup, pgBackRest status/restore, WAL archive check (#11)
+- feat: PostgreSQL migration — pg_dump/pg_restore, pg_upgrade, logical replication setup (#11)
+- feat: PostgreSQL observability — pg_stat_activity, wait events, log tail, custom metrics (#11)
+- feat: PostgreSQL multi-tenant — tenant create/list/isolate/resource limits/connection pool (#11)
+- feat: PostgreSQL WAL management — WAL status, archive, retention, replay, size (#11)
+- feat: PostgreSQL CNPG — cluster status/failover/backup/restore/hibernate/promote (#11)
+- feat: PostgreSQL cross-cluster DR — 18 tools for S3 config, WAL shipping, base backup, PITR, promote, validate, monitor, failback, switchover, clone, retention, encryption, compression, bandwidth, parallel, cleanup, status, test (#11)
+- feat: PostgreSQL RAG — pgvector operations, embedding, semantic search, collection, index, hybrid search, metadata filter (#11)
+- feat: PostgreSQL Vault integration — credential rotate, dynamic secrets, lease management (#11)
+- feat: PostgreSQL policy engine — OPA evaluate, policy sync (#11)
+- feat: `pg` CLI command group with 24 subcommands (137 actions) (#11)
+- feat: shared PostgreSQL query helpers and K8s/kubectl utilities (#11)
+
 ## v2026.04.10.6
 
 - feat: `cmd/docgen` — Cobra doc generation for LLM-friendly CLI reference (#9)
