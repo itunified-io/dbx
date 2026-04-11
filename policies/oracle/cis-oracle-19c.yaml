@@ -1,0 +1,87 @@
+metadata:
+  name: CIS Oracle Database 19c
+  version: "1.0.0"
+  framework: cis
+  scope: oracle_database
+  versions: ["19c"]
+
+rules:
+  - id: "2.2.1"
+    title: "Ensure AUDIT_TRAIL is set to a valid value"
+    severity: high
+    check:
+      type: sql
+      query: "SELECT value FROM v$parameter WHERE name = 'audit_trail'"
+      expected:
+        - "DB"
+        - "DB,EXTENDED"
+        - "XML"
+        - "XML,EXTENDED"
+        - "OS"
+    remediation:
+      command: "ALTER SYSTEM SET audit_trail='DB,EXTENDED' SCOPE=SPFILE"
+      confirm_required: true
+
+  - id: "2.2.4"
+    title: "Ensure AUDIT_SYS_OPERATIONS is set to TRUE"
+    severity: high
+    check:
+      type: sql
+      query: "SELECT value FROM v$parameter WHERE name = 'audit_sys_operations'"
+      expected: "TRUE"
+    remediation:
+      command: "ALTER SYSTEM SET audit_sys_operations=TRUE SCOPE=SPFILE"
+      confirm_required: true
+
+  - id: "3.1"
+    title: "Ensure REMOTE_LOGIN_PASSWORDFILE is set to NONE"
+    severity: high
+    check:
+      type: sql
+      query: "SELECT value FROM v$parameter WHERE name = 'remote_login_passwordfile'"
+      expected: "NONE"
+    remediation:
+      command: "ALTER SYSTEM SET remote_login_passwordfile=NONE SCOPE=SPFILE"
+      confirm_required: true
+
+  - id: "4.1"
+    title: "Ensure no public synonyms for sensitive packages exist"
+    severity: medium
+    check:
+      type: sql
+      query: "SELECT synonym_name FROM dba_synonyms WHERE owner = 'PUBLIC' AND table_name IN ('UTL_FILE','UTL_TCP','UTL_HTTP','UTL_SMTP','DBMS_RANDOM','DBMS_LOB')"
+      expected_empty: true
+    remediation:
+      manual: "DROP PUBLIC SYNONYM for sensitive packages"
+
+  - id: "4.5"
+    title: "Ensure EXTPROC is not enabled in listener"
+    severity: high
+    check:
+      type: sql
+      query: "SELECT value FROM v$parameter WHERE name = 'local_listener'"
+      expected_not_contain: "extproc"
+    remediation:
+      manual: "Remove EXTPROC entries from listener.ora"
+
+  - id: "5.1.1"
+    title: "Ensure SELECT ANY TABLE privilege is revoked from unauthorized users"
+    severity: critical
+    check:
+      type: sql
+      query: "SELECT grantee FROM dba_sys_privs WHERE privilege = 'SELECT ANY TABLE' AND grantee NOT IN ('SYS','SYSTEM','DBA','SELECT_CATALOG_ROLE','EXP_FULL_DATABASE','IMP_FULL_DATABASE')"
+      expected_empty: true
+    remediation:
+      command: "REVOKE SELECT ANY TABLE FROM <user>"
+      confirm_required: true
+
+  - id: "6.1.2"
+    title: "Ensure SEC_MAX_FAILED_LOGIN_ATTEMPTS is set to 10 or less"
+    severity: medium
+    check:
+      type: sql
+      query: "SELECT value FROM v$parameter WHERE name = 'sec_max_failed_login_attempts'"
+      expected: "10"
+    remediation:
+      command: "ALTER SYSTEM SET sec_max_failed_login_attempts=10 SCOPE=SPFILE"
+      confirm_required: true
