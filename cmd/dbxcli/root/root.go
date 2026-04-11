@@ -34,6 +34,7 @@ Commands use named parameters (emcli-style):
 	cmd.AddCommand(NewServeCmd())
 	cmd.AddCommand(NewMCPCmd())
 	cmd.AddCommand(NewLicenseCmd())
+	cmd.AddCommand(NewPolicyCmd())
 
 	return cmd
 }
