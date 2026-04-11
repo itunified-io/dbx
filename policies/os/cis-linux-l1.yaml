@@ -1,0 +1,121 @@
+metadata:
+  name: CIS Linux Level 1
+  version: "3.0.0"
+  framework: cis
+  scope: host
+  distros: [rhel, oracle_linux, ubuntu, sles, fedora]
+
+rules:
+  - id: "1.1.1.1"
+    title: "Ensure mounting of cramfs filesystems is disabled"
+    severity: medium
+    check:
+      type: kernel_module
+      module: cramfs
+      expected: disabled
+    remediation:
+      command: "echo 'install cramfs /bin/true' >> /etc/modprobe.d/cramfs.conf"
+      confirm_required: true
+
+  - id: "1.1.1.2"
+    title: "Ensure mounting of freevxfs filesystems is disabled"
+    severity: medium
+    check:
+      type: kernel_module
+      module: freevxfs
+      expected: disabled
+    remediation:
+      command: "echo 'install freevxfs /bin/true' >> /etc/modprobe.d/freevxfs.conf"
+      confirm_required: true
+
+  - id: "1.5.1"
+    title: "Ensure core dumps are restricted"
+    severity: medium
+    check:
+      type: sysctl_value
+      key: fs.suid_dumpable
+      expected: "0"
+    remediation:
+      command: "sysctl -w fs.suid_dumpable=0 && echo 'fs.suid_dumpable = 0' >> /etc/sysctl.d/99-dbx.conf"
+      confirm_required: true
+
+  - id: "1.5.3"
+    title: "Ensure address space layout randomization (ASLR) is enabled"
+    severity: high
+    check:
+      type: sysctl_value
+      key: kernel.randomize_va_space
+      expected: "2"
+    remediation:
+      command: "sysctl -w kernel.randomize_va_space=2"
+      confirm_required: true
+
+  - id: "3.2.1"
+    title: "Ensure IP forwarding is disabled"
+    severity: medium
+    check:
+      type: sysctl_value
+      key: net.ipv4.ip_forward
+      expected: "0"
+    remediation:
+      command: "sysctl -w net.ipv4.ip_forward=0"
+      confirm_required: true
+
+  - id: "5.2.1"
+    title: "Ensure permissions on /etc/ssh/sshd_config are configured"
+    severity: high
+    check:
+      type: file_permission
+      path: /etc/ssh/sshd_config
+      permission: "0600"
+      owner: root
+      group: root
+    remediation:
+      command: "chmod 600 /etc/ssh/sshd_config && chown root:root /etc/ssh/sshd_config"
+      confirm_required: true
+
+  - id: "5.2.2"
+    title: "Ensure SSH root login is disabled"
+    severity: high
+    check:
+      type: file_content
+      path: /etc/ssh/sshd_config
+      pattern: "^PermitRootLogin"
+      expected: "no"
+    remediation:
+      command: "sed -i 's/^PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config && systemctl restart sshd"
+      confirm_required: true
+
+  - id: "5.2.4"
+    title: "Ensure SSH MaxAuthTries is set to 4 or less"
+    severity: medium
+    check:
+      type: file_content
+      path: /etc/ssh/sshd_config
+      pattern: "^MaxAuthTries"
+      expected: "4"
+    remediation:
+      command: "sed -i 's/^MaxAuthTries.*/MaxAuthTries 4/' /etc/ssh/sshd_config && systemctl restart sshd"
+      confirm_required: true
+
+  - id: "5.2.11"
+    title: "Ensure SSH PermitEmptyPasswords is disabled"
+    severity: critical
+    check:
+      type: file_content
+      path: /etc/ssh/sshd_config
+      pattern: "^PermitEmptyPasswords"
+      expected: "no"
+    remediation:
+      command: "sed -i 's/^PermitEmptyPasswords.*/PermitEmptyPasswords no/' /etc/ssh/sshd_config && systemctl restart sshd"
+      confirm_required: true
+
+  - id: "5.4.2"
+    title: "Ensure system accounts are secured"
+    severity: medium
+    check:
+      type: command_output
+      command: "awk -F: '($3 < 1000 && $1 != \"root\" && $7 != \"/usr/sbin/nologin\" && $7 != \"/bin/false\") {print $1}' /etc/passwd"
+      expected: ""
+    remediation:
+      manual: "Set shell to /usr/sbin/nologin for all system accounts"
