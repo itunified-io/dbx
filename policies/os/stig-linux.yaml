@@ -1,0 +1,63 @@
+metadata:
+  name: DISA STIG Linux
+  version: "1.0.0"
+  framework: stig
+  scope: host
+  distros: [rhel, oracle_linux, ubuntu]
+
+rules:
+  - id: "V-230223"
+    title: "RHEL 8 must implement NIST FIPS-validated cryptography"
+    severity: high
+    check:
+      type: command_output
+      command: "fips-mode-setup --check 2>/dev/null || cat /proc/sys/crypto/fips_enabled"
+      expected: "1"
+    remediation:
+      command: "fips-mode-setup --enable"
+      confirm_required: true
+
+  - id: "V-230231"
+    title: "RHEL 8 must encrypt all stored passwords with SHA-512"
+    severity: high
+    check:
+      type: file_content
+      path: /etc/login.defs
+      pattern: "^ENCRYPT_METHOD"
+      expected: "SHA512"
+    remediation:
+      command: "sed -i 's/^ENCRYPT_METHOD.*/ENCRYPT_METHOD SHA512/' /etc/login.defs"
+      confirm_required: true
+
+  - id: "V-230244"
+    title: "RHEL 8 must not have unnecessary services enabled"
+    severity: medium
+    check:
+      type: command_output
+      command: "systemctl is-enabled rpcbind 2>/dev/null || echo disabled"
+      expected: "disabled"
+    remediation:
+      command: "systemctl disable --now rpcbind"
+      confirm_required: true
+
+  - id: "V-230269"
+    title: "RHEL 8 must restrict access to the kernel message buffer"
+    severity: medium
+    check:
+      type: sysctl_value
+      key: kernel.dmesg_restrict
+      expected: "1"
+    remediation:
+      command: "sysctl -w kernel.dmesg_restrict=1"
+      confirm_required: true
+
+  - id: "V-230324"
+    title: "RHEL 8 must disable core dumps for setuid programs"
+    severity: medium
+    check:
+      type: sysctl_value
+      key: fs.suid_dumpable
+      expected: "0"
+    remediation:
+      command: "sysctl -w fs.suid_dumpable=0"
+      confirm_required: true

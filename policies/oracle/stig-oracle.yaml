@@ -1,0 +1,51 @@
+metadata:
+  name: DISA STIG Oracle Database
+  version: "1.0.0"
+  framework: stig
+  scope: oracle_database
+  versions: ["19c", "21c", "23ai"]
+
+rules:
+  - id: "V-220284"
+    title: "Oracle DB must limit the number of concurrent sessions per user"
+    severity: high
+    check:
+      type: sql
+      query: "SELECT limit FROM dba_profiles WHERE resource_name = 'SESSIONS_PER_USER' AND profile = 'DEFAULT'"
+      expected_not_contain: "UNLIMITED"
+    remediation:
+      command: "ALTER PROFILE DEFAULT LIMIT SESSIONS_PER_USER 10"
+      confirm_required: true
+
+  - id: "V-220285"
+    title: "Oracle DB must enforce password complexity"
+    severity: high
+    check:
+      type: sql
+      query: "SELECT limit FROM dba_profiles WHERE resource_name = 'PASSWORD_VERIFY_FUNCTION' AND profile = 'DEFAULT'"
+      expected_not_contain: "NULL"
+    remediation:
+      command: "ALTER PROFILE DEFAULT LIMIT PASSWORD_VERIFY_FUNCTION ora12c_verify_function"
+      confirm_required: true
+
+  - id: "V-220289"
+    title: "Oracle DB must lock accounts after 3 consecutive invalid login attempts"
+    severity: high
+    check:
+      type: sql
+      query: "SELECT limit FROM dba_profiles WHERE resource_name = 'FAILED_LOGIN_ATTEMPTS' AND profile = 'DEFAULT'"
+      expected: "3"
+    remediation:
+      command: "ALTER PROFILE DEFAULT LIMIT FAILED_LOGIN_ATTEMPTS 3"
+      confirm_required: true
+
+  - id: "V-220302"
+    title: "Oracle DB must have audit trail enabled"
+    severity: high
+    check:
+      type: sql
+      query: "SELECT value FROM v$parameter WHERE name = 'audit_trail'"
+      expected_not_contain: "NONE"
+    remediation:
+      command: "ALTER SYSTEM SET audit_trail='DB,EXTENDED' SCOPE=SPFILE"
+      confirm_required: true

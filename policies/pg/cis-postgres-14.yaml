@@ -1,0 +1,57 @@
+metadata:
+  name: CIS PostgreSQL 14
+  version: "1.0.0"
+  framework: cis
+  scope: pg_database
+  versions: ["14"]
+
+rules:
+  - id: "6.2"
+    title: "Ensure pg_hba.conf does not allow trust authentication"
+    severity: critical
+    check:
+      type: sql
+      query: "SELECT line_number, type, auth_method FROM pg_hba_file_rules WHERE auth_method = 'trust'"
+      expected_empty: true
+    remediation:
+      manual: "Edit pg_hba.conf, change 'trust' to 'scram-sha-256'"
+
+  - id: "6.7"
+    title: "Ensure SSL is enabled"
+    severity: high
+    check:
+      type: sql
+      query: "SHOW ssl"
+      expected: "on"
+    remediation:
+      manual: "Set ssl = on in postgresql.conf"
+
+  - id: "3.1"
+    title: "Ensure the log_destination is configured"
+    severity: medium
+    check:
+      type: sql
+      query: "SHOW log_destination"
+      expected: "stderr"
+    remediation:
+      manual: "Set log_destination in postgresql.conf"
+
+  - id: "3.2"
+    title: "Ensure logging_collector is enabled"
+    severity: medium
+    check:
+      type: sql
+      query: "SHOW logging_collector"
+      expected: "on"
+    remediation:
+      manual: "Set logging_collector = on in postgresql.conf"
+
+  - id: "4.3"
+    title: "Ensure excessive function privileges are revoked"
+    severity: high
+    check:
+      type: sql
+      query: "SELECT nspname, proname FROM pg_proc p JOIN pg_namespace n ON p.pronamespace = n.oid WHERE n.nspname = 'public' AND proacl::text LIKE '%=X/%'"
+      expected_empty: true
+    remediation:
+      manual: "REVOKE EXECUTE ON FUNCTION from PUBLIC"

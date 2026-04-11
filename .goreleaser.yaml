@@ -1,0 +1,104 @@
+version: 2
+
+project_name: dbx
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: dbxcli
+    main: ./cmd/dbxcli
+    binary: dbxcli
+    env:
+      - CGO_ENABLED=0
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+    ldflags:
+      - -s -w
+      - -X github.com/itunified-io/dbx/internal/version.Version={{.Version}}
+      - -X github.com/itunified-io/dbx/internal/version.Commit={{.ShortCommit}}
+      - -X github.com/itunified-io/dbx/internal/version.Date={{.Date}}
+
+  - id: dbxctl
+    main: ./cmd/dbxctl
+    binary: dbxctl
+    env:
+      - CGO_ENABLED=0
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+    ldflags:
+      - -s -w
+      - -X github.com/itunified-io/dbx/internal/version.Version={{.Version}}
+      - -X github.com/itunified-io/dbx/internal/version.Commit={{.ShortCommit}}
+      - -X github.com/itunified-io/dbx/internal/version.Date={{.Date}}
+
+archives:
+  - id: default
+    formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - LICENSE
+      - README.md
+
+checksum:
+  name_template: "checksums.txt"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+
+brews:
+  - name: dbx
+    repository:
+      owner: itunified-io
+      name: homebrew-dbx
+    homepage: "https://itunified.de/mcp-servers/oracle"
+    description: "Multi-database CLI — Oracle + PostgreSQL management"
+    license: "AGPL-3.0"
+    install: |
+      bin.install "dbxcli"
+      bin.install "dbxctl"
+
+dockers:
+  - image_templates:
+      - "ghcr.io/itunified-io/dbx:{{ .Version }}-amd64"
+    use: buildx
+    build_flag_templates:
+      - "--platform=linux/amd64"
+    extra_files: [LICENSE]
+  - image_templates:
+      - "ghcr.io/itunified-io/dbx:{{ .Version }}-arm64"
+    use: buildx
+    build_flag_templates:
+      - "--platform=linux/arm64"
+    goarch: arm64
+    extra_files: [LICENSE]
+
+docker_manifests:
+  - name_template: "ghcr.io/itunified-io/dbx:{{ .Version }}"
+    image_templates:
+      - "ghcr.io/itunified-io/dbx:{{ .Version }}-amd64"
+      - "ghcr.io/itunified-io/dbx:{{ .Version }}-arm64"
+  - name_template: "ghcr.io/itunified-io/dbx:latest"
+    image_templates:
+      - "ghcr.io/itunified-io/dbx:{{ .Version }}-amd64"
+      - "ghcr.io/itunified-io/dbx:{{ .Version }}-arm64"
+
+nfpms:
+  - id: packages
+    package_name: dbx
+    vendor: ITUNIFIED
+    homepage: "https://itunified.de/mcp-servers/oracle"
+    maintainer: "ITUNIFIED <info@itunified.io>"
+    description: "Multi-database CLI — Oracle + PostgreSQL management"
+    license: "AGPL-3.0"
+    formats: [deb, rpm]
+    bindir: /usr/local/bin

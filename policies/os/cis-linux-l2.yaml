@@ -1,0 +1,61 @@
+metadata:
+  name: CIS Linux Level 2
+  version: "3.0.0"
+  framework: cis
+  scope: host
+  distros: [rhel, oracle_linux, ubuntu, sles, fedora]
+
+rules:
+  - id: "1.1.2"
+    title: "Ensure /tmp is a separate partition"
+    severity: medium
+    check:
+      type: command_output
+      command: "findmnt -n -T /tmp --output FSTYPE | head -1"
+      expected: "tmpfs"
+    remediation:
+      manual: "Create a separate /tmp partition or tmpfs mount"
+
+  - id: "1.1.3"
+    title: "Ensure nodev option set on /tmp partition"
+    severity: medium
+    check:
+      type: command_output
+      command: "findmnt -n -T /tmp -O nodev | wc -l"
+      expected: "1"
+    remediation:
+      command: "mount -o remount,nodev /tmp"
+      confirm_required: true
+
+  - id: "4.1.1.1"
+    title: "Ensure auditd is installed"
+    severity: high
+    check:
+      type: command_output
+      command: "rpm -q audit 2>/dev/null || dpkg -l auditd 2>/dev/null | grep -c ii"
+      expected: "1"
+    remediation:
+      command: "yum install -y audit || apt-get install -y auditd"
+      confirm_required: true
+
+  - id: "4.1.1.2"
+    title: "Ensure auditd service is enabled"
+    severity: high
+    check:
+      type: command_output
+      command: "systemctl is-enabled auditd"
+      expected: "enabled"
+    remediation:
+      command: "systemctl enable auditd"
+      confirm_required: true
+
+  - id: "4.2.1.1"
+    title: "Ensure rsyslog is installed"
+    severity: medium
+    check:
+      type: command_output
+      command: "rpm -q rsyslog 2>/dev/null || dpkg -l rsyslog 2>/dev/null | grep -c ii"
+      expected: "1"
+    remediation:
+      command: "yum install -y rsyslog || apt-get install -y rsyslog"
+      confirm_required: true
