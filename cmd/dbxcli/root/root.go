@@ -29,6 +29,7 @@ Commands use named parameters (emcli-style):
 	cmd.AddCommand(NewTargetCmd())
 	cmd.AddCommand(NewDBCmd())
 	cmd.AddCommand(NewLinuxCmd())
+	cmd.AddCommand(NewHostCmd())
 	cmd.AddCommand(NewPgCmd())
 	cmd.AddCommand(NewServeCmd())
 	cmd.AddCommand(NewMCPCmd())
