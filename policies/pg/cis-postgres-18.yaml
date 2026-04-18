@@ -1,0 +1,77 @@
+metadata:
+  name: CIS PostgreSQL 18
+  version: "1.0.0"
+  framework: cis
+  scope: pg_database
+  versions: ["18"]
+
+rules:
+  - id: "6.2"
+    title: "Ensure pg_hba.conf does not allow trust authentication"
+    severity: critical
+    check:
+      type: sql
+      query: "SELECT line_number, type, auth_method FROM pg_hba_file_rules WHERE auth_method = 'trust'"
+      expected_empty: true
+    remediation:
+      manual: "Edit pg_hba.conf, change 'trust' to 'scram-sha-256'"
+
+  - id: "6.7"
+    title: "Ensure SSL is enabled"
+    severity: high
+    check:
+      type: sql
+      query: "SHOW ssl"
+      expected: "on"
+    remediation:
+      manual: "Set ssl = on in postgresql.conf"
+
+  - id: "6.8"
+    title: "Ensure password_encryption is set to scram-sha-256"
+    severity: high
+    check:
+      type: sql
+      query: "SHOW password_encryption"
+      expected: "scram-sha-256"
+    remediation:
+      manual: "Set password_encryption = 'scram-sha-256' in postgresql.conf"
+
+  - id: "3.1"
+    title: "Ensure the log_destination is configured"
+    severity: medium
+    check:
+      type: sql
+      query: "SHOW log_destination"
+      expected: "stderr"
+    remediation:
+      manual: "Set log_destination in postgresql.conf"
+
+  - id: "3.2"
+    title: "Ensure logging_collector is enabled"
+    severity: medium
+    check:
+      type: sql
+      query: "SHOW logging_collector"
+      expected: "on"
+    remediation:
+      manual: "Set logging_collector = on in postgresql.conf"
+
+  - id: "3.5"
+    title: "Ensure log_connections is enabled"
+    severity: medium
+    check:
+      type: sql
+      query: "SHOW log_connections"
+      expected: "on"
+    remediation:
+      manual: "Set log_connections = on in postgresql.conf"
+
+  - id: "3.6"
+    title: "Ensure log_disconnections is enabled"
+    severity: medium
+    check:
+      type: sql
+      query: "SHOW log_disconnections"
+      expected: "on"
+    remediation:
+      manual: "Set log_disconnections = on in postgresql.conf"

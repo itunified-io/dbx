@@ -1,0 +1,50 @@
+metadata:
+  name: CIS Oracle Database 23ai
+  version: "1.0.0"
+  framework: cis
+  scope: oracle_database
+  versions: ["23ai"]
+
+rules:
+  - id: "2.1.1"
+    title: "Ensure unified auditing is enabled"
+    severity: high
+    check:
+      type: sql
+      query: "SELECT value FROM v$option WHERE parameter = 'Unified Auditing'"
+      expected: "TRUE"
+    remediation:
+      manual: "Relink Oracle with unified auditing enabled"
+
+  - id: "2.2.1"
+    title: "Ensure audit policies are created and enabled"
+    severity: high
+    check:
+      type: sql
+      query: "SELECT COUNT(*) AS cnt FROM audit_unified_enabled_policies WHERE policy_name IN ('ORA_SECURECONFIG','ORA_LOGON_FAILURES')"
+      expected: "2"
+    remediation:
+      command: "AUDIT POLICY ORA_SECURECONFIG; AUDIT POLICY ORA_LOGON_FAILURES"
+      confirm_required: true
+
+  - id: "3.1"
+    title: "Ensure password complexity verification function is set"
+    severity: high
+    check:
+      type: sql
+      query: "SELECT limit FROM dba_profiles WHERE resource_name = 'PASSWORD_VERIFY_FUNCTION' AND profile = 'DEFAULT'"
+      expected_not_contain: "NULL"
+    remediation:
+      command: "ALTER PROFILE DEFAULT LIMIT PASSWORD_VERIFY_FUNCTION ora12c_verify_function"
+      confirm_required: true
+
+  - id: "5.1"
+    title: "Ensure PUBLIC does not have EXECUTE on sensitive packages"
+    severity: critical
+    check:
+      type: sql
+      query: "SELECT table_name FROM dba_tab_privs WHERE grantee = 'PUBLIC' AND privilege = 'EXECUTE' AND table_name IN ('UTL_FILE','UTL_TCP','UTL_HTTP','UTL_SMTP','DBMS_SQL','DBMS_RANDOM')"
+      expected_empty: true
+    remediation:
+      command: "REVOKE EXECUTE ON <package> FROM PUBLIC"
+      confirm_required: true
