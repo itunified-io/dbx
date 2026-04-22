@@ -1,0 +1,11 @@
+kind: Cluster
+# 3 independent nodes — no RAC, no replication. Each VM is a standalone target
+# registered individually with dbxcli for smoke testing.
+type: plain
+hosts_entries:
+  - ip: 10.10.0.191
+    names: [dbx-test-oracle-19c, dbx-test-oracle-19c.test.itunified.local]
+  - ip: 10.10.0.192
+    names: [dbx-test-pg-16, dbx-test-pg-16.test.itunified.local]
+  - ip: 10.10.0.193
+    names: [dbx-test-plain-ol9, dbx-test-plain-ol9.test.itunified.local]

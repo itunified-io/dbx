@@ -1,0 +1,27 @@
+kind: Linux
+# Shared OS layout for all three nodes. Per-node overrides handled by
+# linuxctl's --host flag (partitions only apply if disk_tag exists on the node).
+partitions:
+  - disk_tag: oracle-data
+    filesystem: xfs
+    mountpoint: /u01
+  - disk_tag: pg-data
+    filesystem: xfs
+    mountpoint: /var/lib/pgsql
+users:
+  - name: dbxtest
+    wheel: true
+    ssh_key: ${env:DBX_CI_SSH_PUBKEY}
+directories:
+  - path: /opt/dbx
+    owner: dbxtest
+    group: dbxtest
+    mode: "0755"
+packages:
+  - chrony
+  - qemu-guest-agent
+  - cifs-utils
+services:
+  - name: chronyd
+    state: started
+    enabled: true

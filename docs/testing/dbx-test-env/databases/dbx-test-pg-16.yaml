@@ -1,0 +1,18 @@
+kind: Database
+name: dbx-test-pg-16
+engine: postgresql
+version: "16"
+node: dbx-test-pg-16
+connection:
+  host: 10.10.0.192
+  port: 5432
+  database: dbx_test
+  username: dbx_test
+  password: ${vault:secret/dbx-test/pg-16/dbx_test_password}
+dbx_target:
+  type: postgresql
+  profile: cis-postgresql-16
+provisioning:
+  data_dir: /var/lib/pgsql/16/data
+  shared_buffers: 256MB
+  max_connections: 100

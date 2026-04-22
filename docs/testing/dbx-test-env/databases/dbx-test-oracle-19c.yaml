@@ -1,0 +1,18 @@
+kind: Database
+name: dbx-test-oracle-19c
+engine: oracle
+version: "19c"
+node: dbx-test-oracle-19c
+connection:
+  host: 10.10.0.191
+  port: 1521
+  service_name: ORCLPDB1
+  username: system
+  password: ${vault:secret/dbx-test/oracle-19c/system_password}
+dbx_target:
+  type: oracle
+  profile: cis-oracle-19c
+provisioning:
+  data_dir: /u01/app/oracle/oradata
+  sga_target_mb: 2048
+  pga_aggregate_target_mb: 512
