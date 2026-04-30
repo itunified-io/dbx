@@ -7,17 +7,31 @@ import "gopkg.in/yaml.v3"
 type EntityType string
 
 const (
-	TypeOracleDatabase EntityType = "oracle_database"
-	TypeRACDatabase    EntityType = "rac_database"
-	TypeOracleListener EntityType = "oracle_listener"
-	TypeOracleASM      EntityType = "oracle_asm"
-	TypeOracleHost     EntityType = "oracle_host"
-	TypeExadata        EntityType = "exadata"
-	TypeODA            EntityType = "oda"
-	TypeZDLRA          EntityType = "zdlra"
-	TypePGDatabase     EntityType = "pg_database"
-	TypePGCluster      EntityType = "pg_cluster"
-	TypeHost           EntityType = "host"
+	// Oracle entities — aligned with Cloud Control / OEM target_type
+	// registry (ADR-0097 in itunified-io/infrastructure). String values
+	// match `mgmt$target.target_type` so manifest entities round-trip
+	// 1:1 with Cloud Control discovery + `emcli add_target`.
+	TypeOracleDatabase   EntityType = "oracle_database"    // single-instance DB
+	TypeRACDatabase      EntityType = "rac_database"       // clustered DB
+	TypeOracleInstance   EntityType = "oracle_instance"    // per-node DB instance
+	TypeOraclePDB        EntityType = "oracle_pdb"         // pluggable database
+	TypeOracleListener   EntityType = "oracle_listener"    // TNS listener
+	TypeOracleASM        EntityType = "oracle_asm"         // ASM instance
+	TypeOracleHome       EntityType = "oracle_home"        // discrete Oracle home install
+	TypeOracleDGTopology EntityType = "oracle_dg_topology" // Data Guard broker config
+	TypeCluster          EntityType = "cluster"            // GI/CRS cluster
+	// Oracle Engineered Systems
+	TypeExadata EntityType = "exadata"
+	TypeODA     EntityType = "oda"
+	TypeZDLRA   EntityType = "zdlra"
+	// Legacy alias retained for back-compat with pre-ADR-0097 dbx targets;
+	// new manifests should use TypeHost (matches OEM canonical naming).
+	TypeOracleHost EntityType = "oracle_host"
+	// PostgreSQL
+	TypePGDatabase EntityType = "pg_database"
+	TypePGCluster  EntityType = "pg_cluster"
+	// Generic
+	TypeHost EntityType = "host"
 )
 
 // Target is the unified target model for all database engines.
@@ -106,7 +120,9 @@ func Parse(data []byte) (*Target, error) {
 // IsOracle returns true if this target is an Oracle entity type.
 func (t *Target) IsOracle() bool {
 	switch t.Type {
-	case TypeOracleDatabase, TypeRACDatabase, TypeOracleListener, TypeOracleASM, TypeOracleHost, TypeExadata, TypeODA, TypeZDLRA:
+	case TypeOracleDatabase, TypeRACDatabase, TypeOracleInstance, TypeOraclePDB,
+		TypeOracleListener, TypeOracleASM, TypeOracleHome, TypeOracleDGTopology,
+		TypeCluster, TypeOracleHost, TypeExadata, TypeODA, TypeZDLRA:
 		return true
 	}
 	return false
