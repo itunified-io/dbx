@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## v2026.04.30.1
+
+### feat: pkg/otel + Target.OTELAttrs (#19)
+
+OTEL bus integration foundation per itunified-io/infrastructure ADR-0103a (Item 8 of agentic-AI hardening roadmap; Wave B item 3).
+
+- `pkg/otel/attrs.go` — Attribute type + standard key constants (`dbx.entity_type`, `dbx.entity_name`, `dbx.db_unique_name`, `dbx.host`, `dbx.audit_hash`, `dbx.license_tier`, plus Plan-RAG `step_id`/`skill` and Item 1+2 cross-link `decision`/`deny_rule`)
+- `pkg/otel/span.go` — Span + SpanBuilder + Status + Exporter interface + NoopExporter (audit dual-sink fallback)
+- `pkg/core/target/otel.go` — `Target.OTELAttrs()` returns dbx.* attributes derived from EntityType + Name + endpoints; mirrors pkg/otel constants without import cycle
+- 12 unit tests across both packages
+
+Foundation only — OTLP HTTP exporter implementation lives in sibling pkg/otel/exporter (next PR). Default emitter is NoopExporter.
+
 ## v2026.04.11.1
 
 ### P22 — Managed Agents Transport
