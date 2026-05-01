@@ -259,10 +259,10 @@ func asmLabelResetRunbook(spec AsmDiskLabelSpec, lbl AsmLabelEntry, state, senti
 	var unlabel string
 	switch spec.Implementation {
 	case AsmDiskLabelImplAsmlib:
-		unlabel = fmt.Sprintf("%s deletedisk %s", oracleasmBin, lbl.Name)
+		unlabel = fmt.Sprintf("%s deletedisk %s", oracleasmBin, shellEscape(lbl.Name))
 	case AsmDiskLabelImplAFD:
 		unlabel = fmt.Sprintf("env ORACLE_HOME=%s %s/bin/asmcmd afd_unlabel %s",
-			spec.GridHome, spec.GridHome, lbl.Name)
+			shellEscape(spec.GridHome), shellEscape(spec.GridHome), shellEscape(lbl.Name))
 	}
 	return fmt.Sprintf(`# asm-label --reset (MANUAL RUNBOOK; non-destructive in MVP)
 #
