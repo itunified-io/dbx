@@ -2,6 +2,48 @@
 
 All notable changes to this project will be documented in this file.
 
+## v2026.05.01.1 — 2026-05-01
+
+### feat(provision): pkg/provision/install — 8 Oracle install primitives (#22)
+
+New `dbxcli provision install …` subcommands wrapping Oracle silent
+installs end-to-end. Plan 0a of the /lab-up Phase D + E master plan
+(infrastructure issue #519).
+
+Primitives (Cobra leaves):
+- install grid       — runInstaller silent for Grid Infrastructure
+- install dbhome     — runInstaller silent for Oracle DB home
+- install root-sh    — root.sh execution + idempotency touchfile
+- install asmca      — asmca silent diskgroup creation
+- install netca      — netca silent listener creation
+- install asm-label  — oracleasm/AFD disk labeling
+- install dbca       — DBCA silent CDB creation
+- install pdb        — DBCA silent PDB creation
+
+All primitives:
+- Idempotent (detect-and-skip via two-phase sentinel for non-idempotent
+  ops; touchfile for idempotent root.sh)
+- ctx-cancel safe (mid-run interrupt → DetectionStatePartial)
+- Version-agnostic detection (no version-string substring matches)
+- Shell-injection hardened (control-char + metachar Validate; shellEscape
+  on every interpolated arg)
+- `env ORACLE_HOME=<home> <home>/bin/<bin>` qualified probes
+- `--reset` MVP non-destructive (prints recovery runbook to stderr)
+- OTEL span per invocation with `dbx.*` attributes via the package-level
+  `otel.GlobalExporter()` (Plan 0a Task 10)
+
+E2E coverage:
+- Per-primitive unit tests with `host/hosttest.MockExecutor`
+- `pkg/provision/install/otel_test.go` — capture-exporter verifies span
+  emission for all 8 primitives (StatusOK + StatusError paths)
+- `cmd/dbxcli/root/provision_install_e2e_test.go` — leaf registration,
+  --help renders, required-flag rejection (Plan 0a Task 12)
+
+Deferred to follow-ups:
+- Audit chain integration (#26 — dbx `pkg/audit/` doesn't exist yet)
+- License gate enforcement (#27 — `pkg/license/` doesn't expose
+  `RequireBundle` yet; TODO markers remain in `provision_install.go`)
+
 ## v2026.04.30.1
 
 ### feat: pkg/otel + Target.OTELAttrs (#19)

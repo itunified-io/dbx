@@ -1,0 +1,514 @@
+package root
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"strings"
+
+	"github.com/itunified-io/dbx/pkg/provision/install"
+	"github.com/spf13/cobra"
+)
+
+// resolveTarget returns the leaf-local --target if set, else the inherited
+// parent persistent --target, else a usage error. The error is intended to
+// surface BEFORE Validate so the caller sees a cobra-style "required flag"
+// message instead of a deeper runtime spec.Validate() failure.
+func resolveTarget(cmd *cobra.Command, localTarget string) (string, error) {
+	if localTarget != "" {
+		return localTarget, nil
+	}
+	if p := cmd.InheritedFlags().Lookup("target"); p != nil && p.Value.String() != "" {
+		return p.Value.String(), nil
+	}
+	return "", fmt.Errorf("required flag --target not set (pass on leaf or on parent provision command)")
+}
+
+// NewInstallCmd returns the `provision install` parent subcommand.
+// Each leaf delegates to a function in dbx/pkg/provision/install/.
+//
+// License gate: provision domain maps to BundleOps
+// (pkg/core/license.DomainToBundle["provision"]). A RequireTier/RequireBundle
+// helper does not yet exist in pkg/core/license — tracked in #519.
+// When that helper ships, add:  license.RequireBundle(license.BundleOps)
+// at the top of each RunE.
+func NewInstallCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "install",
+		Short: "Oracle install primitives (grid, dbhome, root-sh, asmca, netca, asm-label, dbca, pdb)",
+	}
+	cmd.AddCommand(newInstallGridCmd())
+	cmd.AddCommand(newInstallDbhomeCmd())
+	cmd.AddCommand(newInstallRootshCmd())
+	cmd.AddCommand(newInstallAsmcaCmd())
+	cmd.AddCommand(newInstallNetcaCmd())
+	cmd.AddCommand(newInstallAsmLabelCmd())
+	cmd.AddCommand(newInstallDbcaCmd())
+	cmd.AddCommand(newInstallPdbCmd())
+	return cmd
+}
+
+// newInstallPdbCmd: dbxcli provision install pdb --target X --oracle-home Y --oracle-base Z --cdb-name ORCL --pdb-name PDB1 --admin-password-file F [--datafile-dest +DATA] [--response-file W] [--reset]
+func newInstallPdbCmd() *cobra.Command {
+	var (
+		spec  install.PdbCreateSpec
+		reset bool
+	)
+	cmd := &cobra.Command{
+		Use:   "pdb",
+		Short: "Create a PDB via dbca -silent -createPluggableDatabase (two-phase sentinel)",
+		Long: `Create an Oracle Pluggable Database via dbca silent. Phase D.5 of
+/lab-up — runs after the parent CDB exists (Phase D.4 dbca
+-createDatabase) and before any PDB-scoped tooling.
+
+Idempotency: NON-IDEMPOTENT primitive — uses a two-phase sentinel
+(<oracle_base>/cfgtoollogs/dbx/pdb.<CDB>.<PDB>.partial → pdb.<CDB>.<PDB>.installed),
+keyed on (parent CDB, new PDB) so same-PDB-name in different CDBs on
+the same host does not collide. Detection ALSO probes
+` + "`select name from v$pdbs where name = upper('<PDB>')`" + ` so a
+pre-existing PDB is recognised without forcing a sentinel.
+
+Two CLI shapes are supported:
+  - Direct CLI (default): -sourceDB <CDB> -pdbName <PDB>
+    -pdbAdminUserName PDBADMIN -pdbAdminPasswordFile <file>
+    [-pdbDatafileDestination <dest>]
+  - Response-file (--response-file <rsp>): for advanced templates.
+
+Passwords are NEVER on the command line — dbca reads
+-pdbAdminPasswordFile from a 0600 file owned by the oracle user that
+the caller (skill) placed before invocation.
+
+Reset (MVP): --reset on installed/partial state prints a manual
+recovery runbook to stderr and skips. The destructive
+` + "`dbca -silent -deletePluggableDatabase`" + ` step is deferred to a
+reverter follow-up plan.`,
+		Example: `  dbxcli provision install pdb --target ext3adm1 \
+    --oracle-home /u01/app/oracle/product/19c/dbhome_1 \
+    --oracle-base /u01/app/oracle \
+    --cdb-name ORCL --pdb-name PDB1 \
+    --admin-password-file /tmp/pdbadmin.pw \
+    --datafile-dest +DATA`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// TODO(#519): wire license.RequireBundle("provision") once helper ships
+			t, err := resolveTarget(cmd, spec.Target)
+			if err != nil {
+				return err
+			}
+			spec.Target = t
+			res, err := install.PdbCreate(context.Background(), spec, reset)
+			if err != nil {
+				return err
+			}
+			out, err := json.MarshalIndent(res, "", "  ")
+			if err != nil {
+				return err
+			}
+			fmt.Println(string(out))
+			return nil
+		},
+	}
+	cmd.Flags().StringVar(&spec.Target, "target", "", "target name (overrides provision --target)")
+	cmd.Flags().StringVar(&spec.OracleHome, "oracle-home", "", "$ORACLE_HOME containing bin/dbca + bin/sqlplus")
+	cmd.Flags().StringVar(&spec.OracleBase, "oracle-base", "", "$ORACLE_BASE (sentinel root)")
+	cmd.Flags().StringVar(&spec.CdbName, "cdb-name", "", "Parent CDB DB_UNIQUE_NAME (sentinel key + sqlplus probe target)")
+	cmd.Flags().StringVar(&spec.PdbName, "pdb-name", "", "New PDB name")
+	cmd.Flags().StringVar(&spec.AdminPasswordFile, "admin-password-file", "", "Absolute path to file on host containing PDB admin password (mode 0600)")
+	cmd.Flags().StringVar(&spec.DatafileDest, "datafile-dest", "", "Optional: ASM diskgroup (+DATA) or absolute filesystem path for PDB datafiles")
+	cmd.Flags().StringVar(&spec.ResponseFilePath, "response-file", "", "Optional: absolute path on host to rendered dbca .rsp (overrides direct-CLI form)")
+	cmd.Flags().BoolVar(&reset, "reset", false, "Print manual recovery runbook (NON-DESTRUCTIVE in MVP)")
+	_ = cmd.MarkFlagRequired("oracle-home")
+	_ = cmd.MarkFlagRequired("oracle-base")
+	_ = cmd.MarkFlagRequired("cdb-name")
+	_ = cmd.MarkFlagRequired("pdb-name")
+	_ = cmd.MarkFlagRequired("admin-password-file")
+	return cmd
+}
+
+// newInstallDbcaCmd: dbxcli provision install dbca --target X --oracle-home Y --oracle-base Z --response-file W --db-unique-name ORCL [--sys-password-file F] [--system-password-file F] [--reset]
+func newInstallDbcaCmd() *cobra.Command {
+	var (
+		spec  install.DbcaCreateDbSpec
+		reset bool
+	)
+	cmd := &cobra.Command{
+		Use:   "dbca",
+		Short: "Create CDB via dbca -silent -createDatabase (two-phase sentinel)",
+		Long: `Create an Oracle CDB via dbca silent. Phase D.4 of /lab-up — runs after
+Grid + DB Home + listener and before PDB creation / Data Guard standby
+cloning.
+
+Idempotency: NON-IDEMPOTENT primitive — uses a two-phase sentinel
+(<oracle_base>/cfgtoollogs/dbx/dbca.<DB_UNIQUE_NAME>.partial → dbca.<DB_UNIQUE_NAME>.installed).
+Detection ALSO probes ` + "`srvctl status database -d <unique>`" + ` so a
+pre-existing database is recognised without forcing a sentinel.
+
+The caller (skill) is responsible for rendering and SCPing the dbca .rsp
+response file to the target host before invoking this command. The
+response file format is multi-version; the skill picks the correct
+template per Oracle release (19c / 23ai / 26ai).
+
+Reset (MVP): --reset on installed/partial state prints a manual recovery
+runbook to stderr and skips. The destructive ` + "`dbca -silent -deleteDatabase`" + `
+step is deferred to a reverter follow-up plan.`,
+		Example: `  dbxcli provision install dbca --target ext3adm1 \
+    --oracle-home /u01/app/oracle/product/19c/dbhome_1 \
+    --oracle-base /u01/app/oracle \
+    --response-file /tmp/dbca.rsp \
+    --db-unique-name ORCL`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// TODO(#519): wire license.RequireBundle("provision") once helper ships
+			t, err := resolveTarget(cmd, spec.Target)
+			if err != nil {
+				return err
+			}
+			spec.Target = t
+			res, err := install.DbcaCreateDb(context.Background(), spec, reset)
+			if err != nil {
+				return err
+			}
+			out, err := json.MarshalIndent(res, "", "  ")
+			if err != nil {
+				return err
+			}
+			fmt.Println(string(out))
+			return nil
+		},
+	}
+	cmd.Flags().StringVar(&spec.Target, "target", "", "target name (overrides provision --target)")
+	cmd.Flags().StringVar(&spec.OracleHome, "oracle-home", "", "$ORACLE_HOME containing bin/dbca + bin/srvctl")
+	cmd.Flags().StringVar(&spec.OracleBase, "oracle-base", "", "$ORACLE_BASE (sentinel root)")
+	cmd.Flags().StringVar(&spec.ResponseFilePath, "response-file", "", "Absolute path on host to rendered dbca .rsp")
+	cmd.Flags().StringVar(&spec.DbUniqueName, "db-unique-name", "", "DB_UNIQUE_NAME (used as sentinel key + srvctl probe target)")
+	cmd.Flags().StringVar(&spec.SysPasswordFile, "sys-password-file", "", "Optional: absolute path to file on host containing SYS password (mode 0600)")
+	cmd.Flags().StringVar(&spec.SystemPasswordFile, "system-password-file", "", "Optional: absolute path to file on host containing SYSTEM password (mode 0600)")
+	cmd.Flags().BoolVar(&reset, "reset", false, "Print manual recovery runbook (NON-DESTRUCTIVE in MVP)")
+	_ = cmd.MarkFlagRequired("oracle-home")
+	_ = cmd.MarkFlagRequired("oracle-base")
+	_ = cmd.MarkFlagRequired("response-file")
+	_ = cmd.MarkFlagRequired("db-unique-name")
+	return cmd
+}
+
+// newInstallAsmLabelCmd: dbxcli provision install asm-label --target X --grid-home Y --oracle-base Z --impl asmlib|afd --labels DATA1:/dev/sdb,DATA2:/dev/sdc [--reset]
+func newInstallAsmLabelCmd() *cobra.Command {
+	var (
+		spec       install.AsmDiskLabelSpec
+		labelsFlag string
+		reset      bool
+	)
+	cmd := &cobra.Command{
+		Use:   "asm-label",
+		Short: "Label raw disks for ASM discovery (asmlib or AFD; per-label two-phase sentinel)",
+		Long: `Label raw block devices via ASMlib (oracleasm) or Oracle ASM Filter
+Driver (AFD) so the disks become discoverable as ASM disks. This is a
+Phase D.1 prerequisite that runs BEFORE asmca (which creates the
+diskgroup over labeled devices).
+
+Idempotency: NON-IDEMPOTENT primitive — uses a per-label two-phase
+sentinel (<oracle_base>/cfgtoollogs/dbx/asm-label.<NAME>.partial →
+asm-label.<NAME>.installed). Detection ALSO probes oracleasm listdisks
+(asmlib) or asmcmd afd_lslbl <device> (afd) so a pre-existing label is
+recognised without forcing a sentinel.
+
+Reset (MVP): --reset on installed/partial state for any label prints a
+manual recovery runbook to stderr and skips that label. The destructive
+label-removal step is deferred to a reverter follow-up plan.`,
+		Example: `  dbxcli provision install asm-label --target ext3adm1 \
+    --grid-home /u01/app/19c/grid \
+    --oracle-base /u01/app/grid \
+    --impl asmlib \
+    --labels DATA1:/dev/sdb,DATA2:/dev/sdc`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// TODO(#519): wire license.RequireBundle("provision") once helper ships
+			t, err := resolveTarget(cmd, spec.Target)
+			if err != nil {
+				return err
+			}
+			spec.Target = t
+			if labelsFlag == "" {
+				return fmt.Errorf("--labels is required (comma-separated NAME:DEVICE pairs)")
+			}
+			for _, pair := range strings.Split(labelsFlag, ",") {
+				parts := strings.SplitN(pair, ":", 2)
+				if len(parts) != 2 {
+					return fmt.Errorf("--labels pair %q must be NAME:DEVICE", pair)
+				}
+				spec.Labels = append(spec.Labels, install.AsmLabelEntry{
+					Name:   parts[0],
+					Device: parts[1],
+				})
+			}
+			res, err := install.AsmDiskLabel(context.Background(), spec, reset)
+			if err != nil {
+				// Print partial result before returning so operators see
+				// per-label state on failure.
+				if res != nil {
+					out, _ := json.MarshalIndent(res, "", "  ")
+					fmt.Println(string(out))
+				}
+				return err
+			}
+			out, err := json.MarshalIndent(res, "", "  ")
+			if err != nil {
+				return err
+			}
+			fmt.Println(string(out))
+			return nil
+		},
+	}
+	cmd.Flags().StringVar(&spec.Target, "target", "", "target name (overrides provision --target)")
+	cmd.Flags().StringVar(&spec.GridHome, "grid-home", "", "$GRID_HOME containing bin/asmcmd (used for AFD; required for both impls)")
+	cmd.Flags().StringVar(&spec.OracleBase, "oracle-base", "", "$ORACLE_BASE for grid (sentinel root)")
+	cmd.Flags().StringVar(&spec.Implementation, "impl", install.AsmDiskLabelImplAFD, "Labeling implementation: asmlib | afd")
+	cmd.Flags().StringVar(&labelsFlag, "labels", "", "Comma-separated NAME:DEVICE pairs (e.g. DATA1:/dev/sdb,DATA2:/dev/sdc)")
+	cmd.Flags().BoolVar(&reset, "reset", false, "Print manual recovery runbook (NON-DESTRUCTIVE in MVP)")
+	_ = cmd.MarkFlagRequired("grid-home")
+	_ = cmd.MarkFlagRequired("oracle-base")
+	_ = cmd.MarkFlagRequired("labels")
+	return cmd
+}
+
+// newInstallNetcaCmd: dbxcli provision install netca --target X --oracle-home Y --oracle-base Z --response-file W [--listener-name LISTENER] [--port 1521] [--reset]
+func newInstallNetcaCmd() *cobra.Command {
+	var (
+		spec  install.NetcaSpec
+		reset bool
+	)
+	cmd := &cobra.Command{
+		Use:   "netca",
+		Short: "Create Oracle listener via netca -silent (two-phase sentinel)",
+		Long: `Create an Oracle Net listener via netca silent. Used during Phase D.2
+(post-Grid, pre-DBCA) to ensure a LISTENER exists for client connections
+AND during Phase E.2 to add static services on a standby for RMAN
+DUPLICATE FROM ACTIVE.
+
+Idempotency: NON-IDEMPOTENT primitive — uses a two-phase sentinel
+(<oracle_base>/cfgtoollogs/dbx/netca.<LISTENER>.partial → netca.<LISTENER>.installed).
+Detection ALSO probes lsnrctl status so a pre-existing listener is
+recognised without forcing a sentinel.
+
+Reset (MVP): --reset on installed/partial state prints a manual recovery
+runbook to stderr and skips. The destructive listener-drop step is
+deferred to a reverter follow-up plan.`,
+		Example: `  dbxcli provision install netca --target ext3adm1 \
+    --oracle-home /u01/app/oracle/product/19c/dbhome_1 \
+    --oracle-base /u01/app/oracle \
+    --response-file /tmp/netca.rsp \
+    --listener-name LISTENER --port 1521`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// TODO(#519): wire license.RequireBundle("provision") once helper ships
+			t, err := resolveTarget(cmd, spec.Target)
+			if err != nil {
+				return err
+			}
+			spec.Target = t
+			res, err := install.NetcaSilent(context.Background(), spec, reset)
+			if err != nil {
+				return err
+			}
+			out, err := json.MarshalIndent(res, "", "  ")
+			if err != nil {
+				return err
+			}
+			fmt.Println(string(out))
+			return nil
+		},
+	}
+	cmd.Flags().StringVar(&spec.Target, "target", "", "target name (overrides provision --target)")
+	cmd.Flags().StringVar(&spec.OracleHome, "oracle-home", "", "$ORACLE_HOME containing bin/netca + bin/lsnrctl")
+	cmd.Flags().StringVar(&spec.OracleBase, "oracle-base", "", "$ORACLE_BASE (sentinel root)")
+	cmd.Flags().StringVar(&spec.ResponseFilePath, "response-file", "", "Absolute path on host to rendered netca .rsp")
+	cmd.Flags().StringVar(&spec.ListenerName, "listener-name", "LISTENER", "Listener name")
+	cmd.Flags().IntVar(&spec.Port, "port", 1521, "TCP listening port")
+	cmd.Flags().BoolVar(&reset, "reset", false, "Print manual recovery runbook (NON-DESTRUCTIVE in MVP)")
+	_ = cmd.MarkFlagRequired("oracle-home")
+	_ = cmd.MarkFlagRequired("oracle-base")
+	_ = cmd.MarkFlagRequired("response-file")
+	return cmd
+}
+
+// newInstallAsmcaCmd: dbxcli provision install asmca --target X --oracle-home Y --oracle-base Z --dg-name DATA --disks /dev/sdb,/dev/sdc [--redundancy EXTERNAL] [--au-size-mb 4] [--reset]
+func newInstallAsmcaCmd() *cobra.Command {
+	var (
+		spec       install.AsmcaSpec
+		disksFlag  string
+		reset      bool
+	)
+	cmd := &cobra.Command{
+		Use:   "asmca",
+		Short: "Create initial ASM diskgroup via asmca -silent (two-phase sentinel)",
+		Long: `Create the initial ASM diskgroup (DATA, RECO) for an Oracle Grid Infrastructure
+installation. Subsequent diskgroup operations should go through the
+mcp-oracle-ee-asm tools, which assume ASM is already up.
+
+Idempotency: NON-IDEMPOTENT primitive — uses a two-phase sentinel
+(<oracle_base>/cfgtoollogs/dbx/asmca.<DG>.partial → asmca.<DG>.installed).
+Detection is version-agnostic.
+
+Reset (MVP): --reset on installed/partial state prints a manual recovery
+runbook to stderr and skips. The destructive ` + "`drop diskgroup`" + ` step is
+deferred to a reverter follow-up plan.`,
+		Example: `  dbxcli provision install asmca --target ext3adm1 \
+    --oracle-home /u01/app/19c/grid \
+    --oracle-base /u01/app/grid \
+    --dg-name DATA --disks /dev/sdb,/dev/sdc \
+    --redundancy EXTERNAL --au-size-mb 4`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// TODO(#519): wire license.RequireBundle("provision") once helper ships
+			t, err := resolveTarget(cmd, spec.Target)
+			if err != nil {
+				return err
+			}
+			spec.Target = t
+			if disksFlag == "" {
+				return fmt.Errorf("--disks is required (comma-separated)")
+			}
+			spec.Disks = strings.Split(disksFlag, ",")
+			res, err := install.AsmcaSilent(context.Background(), spec, reset)
+			if err != nil {
+				return err
+			}
+			out, err := json.MarshalIndent(res, "", "  ")
+			if err != nil {
+				return err
+			}
+			fmt.Println(string(out))
+			return nil
+		},
+	}
+	cmd.Flags().StringVar(&spec.Target, "target", "", "target name (overrides provision --target)")
+	cmd.Flags().StringVar(&spec.OracleHome, "oracle-home", "", "$GRID_HOME containing bin/asmca")
+	cmd.Flags().StringVar(&spec.OracleBase, "oracle-base", "", "$ORACLE_BASE for grid (sentinel root)")
+	cmd.Flags().StringVar(&spec.DGName, "dg-name", "", "Diskgroup name (e.g. DATA)")
+	cmd.Flags().StringVar(&spec.Redundancy, "redundancy", "EXTERNAL", "EXTERNAL | NORMAL | HIGH")
+	cmd.Flags().IntVar(&spec.AUSizeMB, "au-size-mb", 4, "Allocation Unit size in MB")
+	cmd.Flags().StringVar(&disksFlag, "disks", "", "Comma-separated disk paths or AFD labels")
+	cmd.Flags().BoolVar(&reset, "reset", false, "Print manual recovery runbook (NON-DESTRUCTIVE in MVP)")
+	_ = cmd.MarkFlagRequired("oracle-home")
+	_ = cmd.MarkFlagRequired("oracle-base")
+	_ = cmd.MarkFlagRequired("dg-name")
+	return cmd
+}
+
+// newInstallDbhomeCmd: dbxcli provision install dbhome --target X --oracle-home Y --software-staging Z --response-file W [--reset]
+func newInstallDbhomeCmd() *cobra.Command {
+	var (
+		spec  install.InstallSpec
+		reset bool
+	)
+	cmd := &cobra.Command{
+		Use:   "dbhome",
+		Short: "Run runInstaller -silent for Oracle DB Home 19c",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// TODO(#519): wire license.RequireBundle("provision") once helper ships
+			t, err := resolveTarget(cmd, spec.Target)
+			if err != nil {
+				return err
+			}
+			spec.Target = t
+			res, err := install.DBHomeInstall(context.Background(), spec, reset)
+			if err != nil {
+				return err
+			}
+			out, err := json.MarshalIndent(res, "", "  ")
+			if err != nil {
+				return err
+			}
+			fmt.Println(string(out))
+			return nil
+		},
+	}
+	cmd.Flags().StringVar(&spec.Target, "target", "", "target name (overrides provision --target)")
+	cmd.Flags().StringVar(&spec.OracleHome, "oracle-home", "", "$ORACLE_HOME (e.g. /u01/app/oracle/product/19c/dbhome_1)")
+	cmd.Flags().StringVar(&spec.OracleBase, "oracle-base", "", "$ORACLE_BASE (e.g. /u01/app/oracle)")
+	cmd.Flags().StringVar(&spec.SoftwareStaging, "software-staging", "", "Path on host where DB home software is unzipped")
+	cmd.Flags().StringVar(&spec.ResponseFilePath, "response-file", "", "Absolute path on host to rendered .rsp file")
+	cmd.Flags().BoolVar(&reset, "reset", false, "Reset prior install state (NOT IMPLEMENTED YET)")
+	_ = cmd.MarkFlagRequired("oracle-home")
+	return cmd
+}
+
+// newInstallRootshCmd: dbxcli provision install root-sh --target X --oracle-home Y [--reset]
+func newInstallRootshCmd() *cobra.Command {
+	var (
+		spec  install.InstallSpec
+		reset bool
+	)
+	cmd := &cobra.Command{
+		Use:   "root-sh",
+		Short: "Run <OracleHome>/root.sh idempotently after a runInstaller",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// TODO(#519): wire license.RequireBundle("provision") once helper ships
+			t, err := resolveTarget(cmd, spec.Target)
+			if err != nil {
+				return err
+			}
+			spec.Target = t
+			res, err := install.RootSh(context.Background(), spec, reset)
+			if err != nil {
+				return err
+			}
+			out, err := json.MarshalIndent(res, "", "  ")
+			if err != nil {
+				return err
+			}
+			fmt.Println(string(out))
+			return nil
+		},
+	}
+	cmd.Flags().StringVar(&spec.Target, "target", "", "target name (overrides provision --target)")
+	cmd.Flags().StringVar(&spec.OracleHome, "oracle-home", "", "$ORACLE_HOME or $GRID_HOME containing root.sh")
+	cmd.Flags().BoolVar(&reset, "reset", false, "Re-run root.sh even if touchfile exists (root.sh is idempotent)")
+	_ = cmd.MarkFlagRequired("oracle-home")
+	return cmd
+}
+
+// newInstallGridCmd: dbxcli provision install grid --target X --oracle-home Y ...
+func newInstallGridCmd() *cobra.Command {
+	var (
+		spec  install.InstallSpec
+		reset bool
+	)
+	cmd := &cobra.Command{
+		Use:   "grid",
+		Short: "Run runInstaller -silent for Oracle Grid Infrastructure 19c",
+		Long: `Run Oracle Grid Infrastructure 19c runInstaller in silent mode.
+
+The caller (skill) is responsible for rendering and SCPing the response file
+to the target host before invoking this command.
+
+Idempotency:
+  - /etc/oraInst.loc + $GRID_HOME/inventory both present → skipped (Detected=installed)
+  - Only one present                                      → error (partial install)
+  - Neither present                                       → runs runInstaller`,
+		Example: `  dbxcli provision install grid --target ext3adm1 \
+    --oracle-home /u01/app/19c/grid \
+    --oracle-base /u01/app/grid \
+    --response-file /tmp/grid.rsp`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			t, err := resolveTarget(cmd, spec.Target)
+			if err != nil {
+				return err
+			}
+			spec.Target = t
+			res, err := install.GridInstall(context.Background(), spec, reset)
+			if err != nil {
+				return err
+			}
+			out, err := json.MarshalIndent(res, "", "  ")
+			if err != nil {
+				return err
+			}
+			fmt.Println(string(out))
+			return nil
+		},
+	}
+	cmd.Flags().StringVar(&spec.Target, "target", "", "target name (overrides provision --target)")
+	cmd.Flags().StringVar(&spec.OracleHome, "oracle-home", "", "$GRID_HOME (e.g. /u01/app/19c/grid)")
+	cmd.Flags().StringVar(&spec.OracleBase, "oracle-base", "", "$ORACLE_BASE for grid (e.g. /u01/app/grid)")
+	cmd.Flags().StringVar(&spec.SoftwareStaging, "software-staging", "", "Path on host where Grid software is unzipped")
+	cmd.Flags().StringVar(&spec.ResponseFilePath, "response-file", "", "Absolute path on host to rendered .rsp file")
+	cmd.Flags().BoolVar(&reset, "reset", false, "Reset prior install state (NOT IMPLEMENTED YET — see #519 reverter follow-up)")
+	_ = cmd.MarkFlagRequired("oracle-home")
+	return cmd
+}

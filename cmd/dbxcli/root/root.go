@@ -37,6 +37,7 @@ Commands use named parameters (emcli-style):
 	cmd.AddCommand(NewPolicyCmd())
 	cmd.AddCommand(NewRagCmd())
 	cmd.AddCommand(NewCloudCmd())
+	cmd.AddCommand(NewProvisionCmd())
 
 	return cmd
 }
