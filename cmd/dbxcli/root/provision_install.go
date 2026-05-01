@@ -27,6 +27,66 @@ func NewInstallCmd() *cobra.Command {
 	cmd.AddCommand(newInstallDbhomeCmd())
 	cmd.AddCommand(newInstallRootshCmd())
 	cmd.AddCommand(newInstallAsmcaCmd())
+	cmd.AddCommand(newInstallNetcaCmd())
+	return cmd
+}
+
+// newInstallNetcaCmd: dbxcli provision install netca --target X --oracle-home Y --oracle-base Z --response-file W [--listener-name LISTENER] [--port 1521] [--reset]
+func newInstallNetcaCmd() *cobra.Command {
+	var (
+		spec  install.NetcaSpec
+		reset bool
+	)
+	cmd := &cobra.Command{
+		Use:   "netca",
+		Short: "Create Oracle listener via netca -silent (two-phase sentinel)",
+		Long: `Create an Oracle Net listener via netca silent. Used during Phase D.2
+(post-Grid, pre-DBCA) to ensure a LISTENER exists for client connections
+AND during Phase E.2 to add static services on a standby for RMAN
+DUPLICATE FROM ACTIVE.
+
+Idempotency: NON-IDEMPOTENT primitive — uses a two-phase sentinel
+(<oracle_base>/cfgtoollogs/dbx/netca.<LISTENER>.partial → netca.<LISTENER>.installed).
+Detection ALSO probes lsnrctl status so a pre-existing listener is
+recognised without forcing a sentinel.
+
+Reset (MVP): --reset on installed/partial state prints a manual recovery
+runbook to stderr and skips. The destructive listener-drop step is
+deferred to a reverter follow-up plan.`,
+		Example: `  dbxcli provision install netca --target ext3adm1 \
+    --oracle-home /u01/app/oracle/product/19c/dbhome_1 \
+    --oracle-base /u01/app/oracle \
+    --response-file /tmp/netca.rsp \
+    --listener-name LISTENER --port 1521`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// TODO(#519): wire license.RequireBundle("provision") once helper ships
+			if spec.Target == "" {
+				if pt := cmd.InheritedFlags().Lookup("target"); pt != nil {
+					spec.Target = pt.Value.String()
+				}
+			}
+			res, err := install.NetcaSilent(context.Background(), spec, reset)
+			if err != nil {
+				return err
+			}
+			out, err := json.MarshalIndent(res, "", "  ")
+			if err != nil {
+				return err
+			}
+			fmt.Println(string(out))
+			return nil
+		},
+	}
+	cmd.Flags().StringVar(&spec.Target, "target", "", "target name (overrides provision --target)")
+	cmd.Flags().StringVar(&spec.OracleHome, "oracle-home", "", "$ORACLE_HOME containing bin/netca + bin/lsnrctl")
+	cmd.Flags().StringVar(&spec.OracleBase, "oracle-base", "", "$ORACLE_BASE (sentinel root)")
+	cmd.Flags().StringVar(&spec.ResponseFilePath, "response-file", "", "Absolute path on host to rendered netca .rsp")
+	cmd.Flags().StringVar(&spec.ListenerName, "listener-name", "LISTENER", "Listener name")
+	cmd.Flags().IntVar(&spec.Port, "port", 1521, "TCP listening port")
+	cmd.Flags().BoolVar(&reset, "reset", false, "Print manual recovery runbook (NON-DESTRUCTIVE in MVP)")
+	_ = cmd.MarkFlagRequired("oracle-home")
+	_ = cmd.MarkFlagRequired("oracle-base")
+	_ = cmd.MarkFlagRequired("response-file")
 	return cmd
 }
 

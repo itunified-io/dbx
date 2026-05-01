@@ -138,3 +138,41 @@ func (s AsmcaSpec) Validate() error {
 	}
 	return nil
 }
+
+// NetcaSpec configures listener creation via netca silent. Used during
+// Phase D.2 (post-Grid, pre-DBCA) to ensure a LISTENER exists for client
+// connections AND during Phase E.2 to add static services on a standby
+// for RMAN DUPLICATE.
+//
+// OracleBase is required because the two-phase sentinel pair lives under
+// <OracleBase>/cfgtoollogs/dbx/netca.<LISTENER>.{partial,installed}.
+type NetcaSpec struct {
+	InstallSpec
+	ListenerName string `json:"listener_name"` // e.g. "LISTENER"
+	Port         int    `json:"port"`          // e.g. 1521
+}
+
+// Validate extends InstallSpec.Validate with listener-specific checks.
+func (s NetcaSpec) Validate() error {
+	if err := s.InstallSpec.Validate(); err != nil {
+		return err
+	}
+	if strings.TrimSpace(s.OracleBase) == "" {
+		return fmt.Errorf("install: oracle_base is required for netca (sentinel path)")
+	}
+	if strings.TrimSpace(s.ListenerName) == "" {
+		return fmt.Errorf("install: listener_name is required")
+	}
+	// Reject control chars + shell metachars on the listener name. Mirrors
+	// AsmcaSpec.Validate's defense-in-depth check on disk entries; the
+	// listener name is interpolated into both the lsnrctl status command
+	// and the sentinel filename, neither of which tolerate metacharacters.
+	const disallowed = "\n\r \t$`!&|;'\"\\<>*?(){}[]"
+	if strings.ContainsAny(s.ListenerName, disallowed) {
+		return fmt.Errorf("install: listener_name contains disallowed character: %q", s.ListenerName)
+	}
+	if s.Port <= 0 || s.Port > 65535 {
+		return fmt.Errorf("install: port must be 1-65535, got %d", s.Port)
+	}
+	return nil
+}
