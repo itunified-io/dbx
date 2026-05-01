@@ -300,6 +300,104 @@ func (s DbcaCreateDbSpec) Validate() error {
 	return nil
 }
 
+// PdbCreateSpec configures silent PDB creation via `dbca -silent
+// -createPluggableDatabase`. Phase D.5 of /lab-up — runs after the
+// parent CDB exists (Phase D.4 dbca -createDatabase) and before any
+// PDB-scoped tooling.
+//
+// Sentinels are keyed on the parent CDB's DB_UNIQUE_NAME PLUS the PDB
+// name so a same-named PDB in two different CDBs on the same host
+// does not collide:
+//
+//	<OracleBase>/cfgtoollogs/dbx/pdb.<CDB>.<PDB>.{partial,installed}
+//
+// Passwords MUST be passed via files on the target host
+// (AdminPasswordFile) — never on the command line where they would
+// leak into ps(1) output and audit records. The caller (skill) is
+// responsible for placing those files (mode 0600, oracle-owned) on
+// the host before invoking this primitive.
+//
+// ResponseFilePath is OPTIONAL: when set, dbca is invoked with
+// -responseFile <path>; when empty, dbca is invoked with direct CLI
+// args (-pdbName, -createAsContainerDatabase). The CLI-arg form is
+// the common case; the response-file form supports advanced templates
+// (custom datafile placement, SEED FILE_NAME_CONVERT, etc.).
+type PdbCreateSpec struct {
+	InstallSpec
+	// CdbName is the parent CDB's DB_UNIQUE_NAME (used in the sentinel
+	// path AND as the sqlplus connection key for the live probe).
+	CdbName string `json:"cdb_name"`
+	// PdbName is the new PDB's name (used in the sentinel path AND as
+	// the v$pdbs probe key + dbca -pdbName argument).
+	PdbName string `json:"pdb_name"`
+	// AdminPasswordFile is the absolute path on the target host to a
+	// file containing the new PDB's admin user password (mode 0600,
+	// oracle-owned). REQUIRED.
+	AdminPasswordFile string `json:"admin_password_file"`
+	// DatafileDest is an optional `+DATA` ASM diskgroup or absolute
+	// filesystem path. When empty, dbca uses the CDB's default
+	// (DB_CREATE_FILE_DEST or the response-file value).
+	DatafileDest string `json:"datafile_dest,omitempty"`
+}
+
+// Validate extends InstallSpec.Validate with PDB-specific checks.
+// ResponseFilePath is OPTIONAL for PdbCreateSpec (overrides the
+// embedded InstallSpec validation which treats it as required-when-set).
+func (s PdbCreateSpec) Validate() error {
+	// We can't call s.InstallSpec.Validate() blindly because some leaves
+	// require ResponseFilePath and some don't; instead repeat the
+	// generic checks here and treat ResponseFilePath as optional.
+	if strings.TrimSpace(s.Target) == "" {
+		return fmt.Errorf("install: target is required")
+	}
+	if strings.TrimSpace(s.OracleHome) == "" {
+		return fmt.Errorf("install: oracle_home is required")
+	}
+	for _, f := range []struct{ name, value string }{
+		{"target", s.Target},
+		{"oracle_home", s.OracleHome},
+		{"oracle_base", s.OracleBase},
+		{"software_staging", s.SoftwareStaging},
+		{"response_file_path", s.ResponseFilePath},
+	} {
+		if strings.ContainsAny(f.value, "\n\r") {
+			return fmt.Errorf("install: field contains control character: %s", f.name)
+		}
+	}
+	if strings.TrimSpace(s.OracleBase) == "" {
+		return fmt.Errorf("install: oracle_base is required for pdb create (sentinel path)")
+	}
+	if strings.TrimSpace(s.CdbName) == "" {
+		return fmt.Errorf("install: cdb_name is required")
+	}
+	if strings.TrimSpace(s.PdbName) == "" {
+		return fmt.Errorf("install: pdb_name is required")
+	}
+	if strings.TrimSpace(s.AdminPasswordFile) == "" {
+		return fmt.Errorf("install: admin_password_file is required (passwords must NEVER be on the command line)")
+	}
+	// Reject control chars + shell metachars on cdb_name and pdb_name.
+	// Both are interpolated into the sqlplus probe AND the sentinel
+	// filename, neither of which tolerate metacharacters.
+	const disallowed = "\n\r \t$`!&|;'\"\\<>*?(){}[]"
+	if strings.ContainsAny(s.CdbName, disallowed) {
+		return fmt.Errorf("install: cdb_name contains disallowed character: %q", s.CdbName)
+	}
+	if strings.ContainsAny(s.PdbName, disallowed) {
+		return fmt.Errorf("install: pdb_name contains disallowed character: %q", s.PdbName)
+	}
+	// Reject control chars on the optional path-like fields.
+	for _, f := range []struct{ name, value string }{
+		{"admin_password_file", s.AdminPasswordFile},
+		{"datafile_dest", s.DatafileDest},
+	} {
+		if f.value != "" && strings.ContainsAny(f.value, "\n\r") {
+			return fmt.Errorf("install: field contains control character: %s", f.name)
+		}
+	}
+	return nil
+}
+
 // NetcaSpec configures listener creation via netca silent. Used during
 // Phase D.2 (post-Grid, pre-DBCA) to ensure a LISTENER exists for client
 // connections AND during Phase E.2 to add static services on a standby

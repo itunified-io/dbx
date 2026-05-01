@@ -21,7 +21,7 @@ import (
 func NewInstallCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "install",
-		Short: "Oracle install primitives (grid, dbhome, root-sh, asmca, netca, asm-label)",
+		Short: "Oracle install primitives (grid, dbhome, root-sh, asmca, netca, asm-label, dbca, pdb)",
 	}
 	cmd.AddCommand(newInstallGridCmd())
 	cmd.AddCommand(newInstallDbhomeCmd())
@@ -30,6 +30,83 @@ func NewInstallCmd() *cobra.Command {
 	cmd.AddCommand(newInstallNetcaCmd())
 	cmd.AddCommand(newInstallAsmLabelCmd())
 	cmd.AddCommand(newInstallDbcaCmd())
+	cmd.AddCommand(newInstallPdbCmd())
+	return cmd
+}
+
+// newInstallPdbCmd: dbxcli provision install pdb --target X --oracle-home Y --oracle-base Z --cdb-name ORCL --pdb-name PDB1 --admin-password-file F [--datafile-dest +DATA] [--response-file W] [--reset]
+func newInstallPdbCmd() *cobra.Command {
+	var (
+		spec  install.PdbCreateSpec
+		reset bool
+	)
+	cmd := &cobra.Command{
+		Use:   "pdb",
+		Short: "Create a PDB via dbca -silent -createPluggableDatabase (two-phase sentinel)",
+		Long: `Create an Oracle Pluggable Database via dbca silent. Phase D.5 of
+/lab-up — runs after the parent CDB exists (Phase D.4 dbca
+-createDatabase) and before any PDB-scoped tooling.
+
+Idempotency: NON-IDEMPOTENT primitive — uses a two-phase sentinel
+(<oracle_base>/cfgtoollogs/dbx/pdb.<CDB>.<PDB>.partial → pdb.<CDB>.<PDB>.installed),
+keyed on (parent CDB, new PDB) so same-PDB-name in different CDBs on
+the same host does not collide. Detection ALSO probes
+` + "`select name from v$pdbs where name = upper('<PDB>')`" + ` so a
+pre-existing PDB is recognised without forcing a sentinel.
+
+Two CLI shapes are supported:
+  - Direct CLI (default): -sourceDB <CDB> -pdbName <PDB>
+    -pdbAdminUserName PDBADMIN -pdbAdminPasswordFile <file>
+    [-pdbDatafileDestination <dest>]
+  - Response-file (--response-file <rsp>): for advanced templates.
+
+Passwords are NEVER on the command line — dbca reads
+-pdbAdminPasswordFile from a 0600 file owned by the oracle user that
+the caller (skill) placed before invocation.
+
+Reset (MVP): --reset on installed/partial state prints a manual
+recovery runbook to stderr and skips. The destructive
+` + "`dbca -silent -deletePluggableDatabase`" + ` step is deferred to a
+reverter follow-up plan.`,
+		Example: `  dbxcli provision install pdb --target ext3adm1 \
+    --oracle-home /u01/app/oracle/product/19c/dbhome_1 \
+    --oracle-base /u01/app/oracle \
+    --cdb-name ORCL --pdb-name PDB1 \
+    --admin-password-file /tmp/pdbadmin.pw \
+    --datafile-dest +DATA`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// TODO(#519): wire license.RequireBundle("provision") once helper ships
+			if spec.Target == "" {
+				if pt := cmd.InheritedFlags().Lookup("target"); pt != nil {
+					spec.Target = pt.Value.String()
+				}
+			}
+			res, err := install.PdbCreate(context.Background(), spec, reset)
+			if err != nil {
+				return err
+			}
+			out, err := json.MarshalIndent(res, "", "  ")
+			if err != nil {
+				return err
+			}
+			fmt.Println(string(out))
+			return nil
+		},
+	}
+	cmd.Flags().StringVar(&spec.Target, "target", "", "target name (overrides provision --target)")
+	cmd.Flags().StringVar(&spec.OracleHome, "oracle-home", "", "$ORACLE_HOME containing bin/dbca + bin/sqlplus")
+	cmd.Flags().StringVar(&spec.OracleBase, "oracle-base", "", "$ORACLE_BASE (sentinel root)")
+	cmd.Flags().StringVar(&spec.CdbName, "cdb-name", "", "Parent CDB DB_UNIQUE_NAME (sentinel key + sqlplus probe target)")
+	cmd.Flags().StringVar(&spec.PdbName, "pdb-name", "", "New PDB name")
+	cmd.Flags().StringVar(&spec.AdminPasswordFile, "admin-password-file", "", "Absolute path to file on host containing PDB admin password (mode 0600)")
+	cmd.Flags().StringVar(&spec.DatafileDest, "datafile-dest", "", "Optional: ASM diskgroup (+DATA) or absolute filesystem path for PDB datafiles")
+	cmd.Flags().StringVar(&spec.ResponseFilePath, "response-file", "", "Optional: absolute path on host to rendered dbca .rsp (overrides direct-CLI form)")
+	cmd.Flags().BoolVar(&reset, "reset", false, "Print manual recovery runbook (NON-DESTRUCTIVE in MVP)")
+	_ = cmd.MarkFlagRequired("oracle-home")
+	_ = cmd.MarkFlagRequired("oracle-base")
+	_ = cmd.MarkFlagRequired("cdb-name")
+	_ = cmd.MarkFlagRequired("pdb-name")
+	_ = cmd.MarkFlagRequired("admin-password-file")
 	return cmd
 }
 
