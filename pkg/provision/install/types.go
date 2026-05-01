@@ -68,8 +68,14 @@ type DetectionState int
 
 const (
 	DetectionStateAbsent    DetectionState = iota // No prior install evidence on target
-	DetectionStatePartial                          // Some evidence; install was started but not finished
-	DetectionStateInstalled                        // Full prior install detected; safe to skip
+	DetectionStatePartial                         // Some evidence; install was started but not finished
+	DetectionStateInstalled                       // Full prior install detected; safe to skip
+
+	// DetectionStateUnset is a test-only sentinel for table-driven
+	// cases that don't care to assert a specific Detected state.
+	// Real probes never return Unset; it lives outside the iota
+	// sequence so the zero value of DetectionState remains Absent.
+	DetectionStateUnset DetectionState = -1
 )
 
 // String implements fmt.Stringer.
@@ -120,9 +126,14 @@ func (s AsmcaSpec) Validate() error {
 	if len(s.Disks) == 0 {
 		return fmt.Errorf("install: disks list is required")
 	}
+	// Reject control chars, comma (the join separator), and shell
+	// metacharacters that would survive shellEscape on the joined
+	// argument. The whole join is shell-escaped at the call site, but
+	// individual entries are still defended-in-depth here.
+	const disallowed = "\n\r, \t$`!&|;'\"\\<>*?(){}[]"
 	for _, d := range s.Disks {
-		if strings.ContainsAny(d, "\n\r,") {
-			return fmt.Errorf("install: disk entry contains control character or comma: %q", d)
+		if strings.ContainsAny(d, disallowed) {
+			return fmt.Errorf("install: disk entry contains disallowed character: %q", d)
 		}
 	}
 	return nil

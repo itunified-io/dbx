@@ -88,7 +88,7 @@ func asmcaSilentWithExec(ctx context.Context, exec host.Executor, spec AsmcaSpec
 	cmd := fmt.Sprintf("%s/bin/asmca -silent -createDiskGroup -diskGroupName %s -diskList %s -redundancy %s -au_size %d",
 		shellEscape(spec.OracleHome),
 		shellEscape(spec.DGName),
-		strings.Join(spec.Disks, ","),
+		shellEscape(strings.Join(spec.Disks, ",")),
 		spec.Redundancy,
 		spec.AUSizeMB,
 	)

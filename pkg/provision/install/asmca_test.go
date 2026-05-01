@@ -33,6 +33,10 @@ func TestAsmcaSilent(t *testing.T) {
 	const asmca = "/u01/app/19c/grid/bin/asmca -silent -createDiskGroup -diskGroupName DATA -diskList /dev/sdb,/dev/sdc -redundancy EXTERNAL -au_size 4"
 	const mv = "mv /u01/app/grid/cfgtoollogs/dbx/asmca.DATA.partial /u01/app/grid/cfgtoollogs/dbx/asmca.DATA.installed"
 
+	// Test cases use DetectionStateUnset (-1) for wantDetected when the
+	// case does not need to assert a specific Detected value. The zero
+	// value of DetectionState is Absent, so we cannot use 0 as a "don't
+	// care" sentinel — that would silently skip Absent assertions.
 	cases := []struct {
 		name            string
 		setupMock       func(*hosttest.MockExecutor)
@@ -117,7 +121,8 @@ func TestAsmcaSilent(t *testing.T) {
 				InstallSpec: InstallSpec{OracleHome: "/x", OracleBase: "/y"},
 				DGName:      "D", Redundancy: "EXTERNAL", AUSizeMB: 4, Disks: []string{"/d"},
 			},
-			wantErr: "target is required",
+			wantErr:      "target is required",
+			wantDetected: DetectionStateUnset,
 		},
 		{
 			name:      "RejectsMissingOracleBase",
@@ -126,7 +131,8 @@ func TestAsmcaSilent(t *testing.T) {
 				InstallSpec: InstallSpec{Target: "x", OracleHome: "/x"},
 				DGName:      "D", Redundancy: "EXTERNAL", AUSizeMB: 4, Disks: []string{"/d"},
 			},
-			wantErr: "oracle_base is required",
+			wantErr:      "oracle_base is required",
+			wantDetected: DetectionStateUnset,
 		},
 		{
 			name:      "RejectsMissingDGName",
@@ -135,7 +141,8 @@ func TestAsmcaSilent(t *testing.T) {
 				InstallSpec: InstallSpec{Target: "x", OracleHome: "/x", OracleBase: "/y"},
 				Redundancy:  "EXTERNAL", AUSizeMB: 4, Disks: []string{"/d"},
 			},
-			wantErr: "dg_name is required",
+			wantErr:      "dg_name is required",
+			wantDetected: DetectionStateUnset,
 		},
 		{
 			name:      "RejectsBadRedundancy",
@@ -144,7 +151,8 @@ func TestAsmcaSilent(t *testing.T) {
 				InstallSpec: InstallSpec{Target: "x", OracleHome: "/x", OracleBase: "/y"},
 				DGName:      "D", Redundancy: "BOGUS", AUSizeMB: 4, Disks: []string{"/d"},
 			},
-			wantErr: "EXTERNAL/NORMAL/HIGH",
+			wantErr:      "EXTERNAL/NORMAL/HIGH",
+			wantDetected: DetectionStateUnset,
 		},
 		{
 			name:      "RejectsZeroAUSize",
@@ -153,7 +161,8 @@ func TestAsmcaSilent(t *testing.T) {
 				InstallSpec: InstallSpec{Target: "x", OracleHome: "/x", OracleBase: "/y"},
 				DGName:      "D", Redundancy: "EXTERNAL", AUSizeMB: 0, Disks: []string{"/d"},
 			},
-			wantErr: "au_size_mb",
+			wantErr:      "au_size_mb",
+			wantDetected: DetectionStateUnset,
 		},
 		{
 			name:      "RejectsEmptyDisks",
@@ -162,7 +171,8 @@ func TestAsmcaSilent(t *testing.T) {
 				InstallSpec: InstallSpec{Target: "x", OracleHome: "/x", OracleBase: "/y"},
 				DGName:      "D", Redundancy: "EXTERNAL", AUSizeMB: 4,
 			},
-			wantErr: "disks list is required",
+			wantErr:      "disks list is required",
+			wantDetected: DetectionStateUnset,
 		},
 		{
 			name:      "RejectsCommaInDisk",
@@ -172,7 +182,19 @@ func TestAsmcaSilent(t *testing.T) {
 				DGName:      "D", Redundancy: "EXTERNAL", AUSizeMB: 4,
 				Disks: []string{"/dev/sdb,/dev/sdc"},
 			},
-			wantErr: "control character or comma",
+			wantErr:      "disallowed character",
+			wantDetected: DetectionStateUnset,
+		},
+		{
+			name:      "RejectsDiskWithShellMetachar",
+			setupMock: func(m *hosttest.MockExecutor) {},
+			spec: AsmcaSpec{
+				InstallSpec: InstallSpec{Target: "x", OracleHome: "/x", OracleBase: "/y"},
+				DGName:      "D", Redundancy: "EXTERNAL", AUSizeMB: 4,
+				Disks: []string{"/dev/sdb;rm -rf /"},
+			},
+			wantErr:      "disallowed character",
+			wantDetected: DetectionStateUnset,
 		},
 	}
 
@@ -187,7 +209,7 @@ func TestAsmcaSilent(t *testing.T) {
 				if tc.wantLogContains != "" && res != nil {
 					assert.Contains(t, res.LogTail, tc.wantLogContains)
 				}
-				if tc.wantDetected != 0 && res != nil {
+				if tc.wantDetected != DetectionStateUnset && res != nil {
 					assert.Equal(t, tc.wantDetected, res.Detected)
 				}
 				return
