@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/itunified-io/dbx/pkg/host"
+	"github.com/itunified-io/dbx/pkg/otel"
 )
 
 // GridInstall runs `runInstaller -silent` for Oracle Grid Infrastructure
@@ -27,7 +28,15 @@ func GridInstall(ctx context.Context, spec InstallSpec, reset bool) (*InstallRes
 
 // gridInstallWithExec is the testable core. Takes an injected executor
 // so unit tests can use hosttest.MockExecutor.
-func gridInstallWithExec(ctx context.Context, exec host.Executor, spec InstallSpec, reset bool) (*InstallResult, error) {
+func gridInstallWithExec(ctx context.Context, exec host.Executor, spec InstallSpec, reset bool) (res *InstallResult, retErr error) {
+	sb := otel.NewSpan("provision.install.grid", "dbxcli").
+		WithAttrs(
+			otel.StringAttr(otel.AttrDbxHost, spec.Target),
+			otel.StringAttr(otel.AttrDbxEntityType, "oracle_grid_home"),
+			otel.StringAttr(otel.AttrDbxEntityName, spec.OracleHome),
+		)
+	defer func() { emitSpan(ctx, sb, retErr) }()
+
 	if err := spec.Validate(); err != nil {
 		return nil, err
 	}
@@ -37,7 +46,7 @@ func gridInstallWithExec(ctx context.Context, exec host.Executor, spec InstallSp
 		return nil, fmt.Errorf("detect grid state on %s: %w", spec.Target, err)
 	}
 
-	res := &InstallResult{Detected: state}
+	res = &InstallResult{Detected: state}
 
 	switch state {
 	case DetectionStateInstalled:

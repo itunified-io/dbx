@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/itunified-io/dbx/pkg/host"
+	"github.com/itunified-io/dbx/pkg/otel"
 )
 
 // dbcaSentinelDir is the directory under OracleBase where dbx writes the
@@ -38,7 +39,16 @@ func DbcaCreateDb(ctx context.Context, spec DbcaCreateDbSpec, reset bool) (*Inst
 
 // dbcaCreateDbWithExec is the testable core. Takes an injected executor
 // so unit tests can use hosttest.MockExecutor.
-func dbcaCreateDbWithExec(ctx context.Context, exec host.Executor, spec DbcaCreateDbSpec, reset bool) (*InstallResult, error) {
+func dbcaCreateDbWithExec(ctx context.Context, exec host.Executor, spec DbcaCreateDbSpec, reset bool) (res *InstallResult, retErr error) {
+	sb := otel.NewSpan("provision.install.dbca_create_db", "dbxcli").
+		WithAttrs(
+			otel.StringAttr(otel.AttrDbxHost, spec.Target),
+			otel.StringAttr(otel.AttrDbxEntityType, "oracle_database"),
+			otel.StringAttr(otel.AttrDbxEntityName, spec.DbUniqueName),
+			otel.StringAttr(otel.AttrDbxDBUniqueName, spec.DbUniqueName),
+		)
+	defer func() { emitSpan(ctx, sb, retErr) }()
+
 	if err := spec.Validate(); err != nil {
 		return nil, err
 	}
@@ -56,7 +66,7 @@ func dbcaCreateDbWithExec(ctx context.Context, exec host.Executor, spec DbcaCrea
 		return nil, fmt.Errorf("install: detect dbca state on %s: %w", spec.Target, err)
 	}
 
-	res := &InstallResult{Detected: state}
+	res = &InstallResult{Detected: state}
 
 	switch state {
 	case DetectionStateInstalled:

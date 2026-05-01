@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/itunified-io/dbx/pkg/host"
+	"github.com/itunified-io/dbx/pkg/otel"
 )
 
 // RootSh runs <OracleHome>/root.sh on the target host. The wrapped
@@ -27,7 +28,15 @@ func RootSh(ctx context.Context, spec InstallSpec, reset bool) (*InstallResult, 
 
 // rootShWithExec is the testable core. Takes an injected executor so
 // unit tests can use hosttest.MockExecutor.
-func rootShWithExec(ctx context.Context, exec host.Executor, spec InstallSpec, reset bool) (*InstallResult, error) {
+func rootShWithExec(ctx context.Context, exec host.Executor, spec InstallSpec, reset bool) (res *InstallResult, retErr error) {
+	sb := otel.NewSpan("provision.install.root_sh", "dbxcli").
+		WithAttrs(
+			otel.StringAttr(otel.AttrDbxHost, spec.Target),
+			otel.StringAttr(otel.AttrDbxEntityType, "oracle_root_sh"),
+			otel.StringAttr(otel.AttrDbxEntityName, spec.OracleHome),
+		)
+	defer func() { emitSpan(ctx, sb, retErr) }()
+
 	if err := spec.Validate(); err != nil {
 		return nil, err
 	}
@@ -38,7 +47,7 @@ func rootShWithExec(ctx context.Context, exec host.Executor, spec InstallSpec, r
 		return nil, fmt.Errorf("probe touchfile on %s: %w", spec.Target, err)
 	}
 
-	res := &InstallResult{}
+	res = &InstallResult{}
 	if exists {
 		res.Detected = DetectionStateInstalled
 		if !reset {

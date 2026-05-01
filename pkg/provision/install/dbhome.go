@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/itunified-io/dbx/pkg/host"
+	"github.com/itunified-io/dbx/pkg/otel"
 )
 
 // DBHomeInstall runs `runInstaller -silent` for an Oracle DB Home on
@@ -27,7 +28,15 @@ func DBHomeInstall(ctx context.Context, spec InstallSpec, reset bool) (*InstallR
 
 // dbhomeInstallWithExec is the testable core. Takes an injected executor
 // so unit tests can use hosttest.MockExecutor.
-func dbhomeInstallWithExec(ctx context.Context, exec host.Executor, spec InstallSpec, reset bool) (*InstallResult, error) {
+func dbhomeInstallWithExec(ctx context.Context, exec host.Executor, spec InstallSpec, reset bool) (res *InstallResult, retErr error) {
+	sb := otel.NewSpan("provision.install.dbhome", "dbxcli").
+		WithAttrs(
+			otel.StringAttr(otel.AttrDbxHost, spec.Target),
+			otel.StringAttr(otel.AttrDbxEntityType, "oracle_db_home"),
+			otel.StringAttr(otel.AttrDbxEntityName, spec.OracleHome),
+		)
+	defer func() { emitSpan(ctx, sb, retErr) }()
+
 	if err := spec.Validate(); err != nil {
 		return nil, err
 	}
@@ -37,7 +46,7 @@ func dbhomeInstallWithExec(ctx context.Context, exec host.Executor, spec Install
 		return nil, fmt.Errorf("detect dbhome state on %s: %w", spec.Target, err)
 	}
 
-	res := &InstallResult{Detected: state}
+	res = &InstallResult{Detected: state}
 
 	switch state {
 	case DetectionStateInstalled:

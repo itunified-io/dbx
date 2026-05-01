@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/itunified-io/dbx/pkg/host"
+	"github.com/itunified-io/dbx/pkg/otel"
 )
 
 // asmcaSentinelDir is the directory under OracleBase where dbx writes
@@ -37,7 +38,15 @@ func AsmcaSilent(ctx context.Context, spec AsmcaSpec, reset bool) (*InstallResul
 
 // asmcaSilentWithExec is the testable core. Takes an injected executor
 // so unit tests can use hosttest.MockExecutor.
-func asmcaSilentWithExec(ctx context.Context, exec host.Executor, spec AsmcaSpec, reset bool) (*InstallResult, error) {
+func asmcaSilentWithExec(ctx context.Context, exec host.Executor, spec AsmcaSpec, reset bool) (res *InstallResult, retErr error) {
+	sb := otel.NewSpan("provision.install.asmca", "dbxcli").
+		WithAttrs(
+			otel.StringAttr(otel.AttrDbxHost, spec.Target),
+			otel.StringAttr(otel.AttrDbxEntityType, "asm_diskgroup"),
+			otel.StringAttr(otel.AttrDbxEntityName, spec.DGName),
+		)
+	defer func() { emitSpan(ctx, sb, retErr) }()
+
 	if err := spec.Validate(); err != nil {
 		return nil, err
 	}
@@ -49,7 +58,7 @@ func asmcaSilentWithExec(ctx context.Context, exec host.Executor, spec AsmcaSpec
 		return nil, fmt.Errorf("install: detect asmca state on %s: %w", spec.Target, err)
 	}
 
-	res := &InstallResult{Detected: state}
+	res = &InstallResult{Detected: state}
 
 	switch state {
 	case DetectionStateInstalled:

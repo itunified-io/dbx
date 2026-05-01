@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/itunified-io/dbx/pkg/host"
+	"github.com/itunified-io/dbx/pkg/otel"
 )
 
 // netcaSentinelDir is the directory under OracleBase where dbx writes the
@@ -38,7 +39,15 @@ func NetcaSilent(ctx context.Context, spec NetcaSpec, reset bool) (*InstallResul
 
 // netcaSilentWithExec is the testable core. Takes an injected executor so
 // unit tests can use hosttest.MockExecutor.
-func netcaSilentWithExec(ctx context.Context, exec host.Executor, spec NetcaSpec, reset bool) (*InstallResult, error) {
+func netcaSilentWithExec(ctx context.Context, exec host.Executor, spec NetcaSpec, reset bool) (res *InstallResult, retErr error) {
+	sb := otel.NewSpan("provision.install.netca", "dbxcli").
+		WithAttrs(
+			otel.StringAttr(otel.AttrDbxHost, spec.Target),
+			otel.StringAttr(otel.AttrDbxEntityType, "oracle_listener"),
+			otel.StringAttr(otel.AttrDbxEntityName, spec.ListenerName),
+		)
+	defer func() { emitSpan(ctx, sb, retErr) }()
+
 	if err := spec.Validate(); err != nil {
 		return nil, err
 	}
@@ -54,7 +63,7 @@ func netcaSilentWithExec(ctx context.Context, exec host.Executor, spec NetcaSpec
 		return nil, fmt.Errorf("install: detect netca state on %s: %w", spec.Target, err)
 	}
 
-	res := &InstallResult{Detected: state}
+	res = &InstallResult{Detected: state}
 
 	switch state {
 	case DetectionStateInstalled:

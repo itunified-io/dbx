@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/itunified-io/dbx/pkg/host"
+	"github.com/itunified-io/dbx/pkg/otel"
 )
 
 // PdbCreate creates an Oracle Pluggable Database via
@@ -37,7 +38,15 @@ func PdbCreate(ctx context.Context, spec PdbCreateSpec, reset bool) (*InstallRes
 
 // pdbCreateWithExec is the testable core. Takes an injected executor
 // so unit tests can use hosttest.MockExecutor.
-func pdbCreateWithExec(ctx context.Context, exec host.Executor, spec PdbCreateSpec, reset bool) (*InstallResult, error) {
+func pdbCreateWithExec(ctx context.Context, exec host.Executor, spec PdbCreateSpec, reset bool) (res *InstallResult, retErr error) {
+	sb := otel.NewSpan("provision.install.pdb_create", "dbxcli").
+		WithAttrs(
+			otel.StringAttr(otel.AttrDbxHost, spec.Target),
+			otel.StringAttr(otel.AttrDbxEntityType, "oracle_pdb"),
+			otel.StringAttr(otel.AttrDbxEntityName, spec.CdbName+"/"+spec.PdbName),
+		)
+	defer func() { emitSpan(ctx, sb, retErr) }()
+
 	if err := spec.Validate(); err != nil {
 		return nil, err
 	}
@@ -49,7 +58,7 @@ func pdbCreateWithExec(ctx context.Context, exec host.Executor, spec PdbCreateSp
 		return nil, fmt.Errorf("install: detect pdb state on %s: %w", spec.Target, err)
 	}
 
-	res := &InstallResult{Detected: state}
+	res = &InstallResult{Detected: state}
 
 	switch state {
 	case DetectionStateInstalled:

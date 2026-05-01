@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/itunified-io/dbx/pkg/host"
+	"github.com/itunified-io/dbx/pkg/otel"
 )
 
 // asmLabelSentinelDir is the directory under OracleBase where dbx writes
@@ -55,12 +56,20 @@ func AsmDiskLabel(ctx context.Context, spec AsmDiskLabelSpec, reset bool) (*AsmD
 
 // asmDiskLabelWithExec is the testable core. Takes an injected executor
 // so unit tests can use hosttest.MockExecutor.
-func asmDiskLabelWithExec(ctx context.Context, exec host.Executor, spec AsmDiskLabelSpec, reset bool) (*AsmDiskLabelResult, error) {
+func asmDiskLabelWithExec(ctx context.Context, exec host.Executor, spec AsmDiskLabelSpec, reset bool) (res *AsmDiskLabelResult, retErr error) {
+	sb := otel.NewSpan("provision.install.asm_label", "dbxcli").
+		WithAttrs(
+			otel.StringAttr(otel.AttrDbxHost, spec.Target),
+			otel.StringAttr(otel.AttrDbxEntityType, "asm_disk_labels"),
+			otel.StringAttr(otel.AttrDbxEntityName, spec.Implementation),
+		)
+	defer func() { emitSpan(ctx, sb, retErr) }()
+
 	if err := spec.Validate(); err != nil {
 		return nil, err
 	}
 
-	res := &AsmDiskLabelResult{Implementation: spec.Implementation}
+	res = &AsmDiskLabelResult{Implementation: spec.Implementation}
 
 	for _, lbl := range spec.Labels {
 		partialPath, installedPath := asmLabelSentinelPaths(spec, lbl)
