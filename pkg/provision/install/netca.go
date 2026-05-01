@@ -49,7 +49,7 @@ func netcaSilentWithExec(ctx context.Context, exec host.Executor, spec NetcaSpec
 
 	partialPath, installedPath := netcaSentinelPaths(spec)
 
-	state, err := detectNetcaState(ctx, exec, spec.ListenerName, partialPath, installedPath)
+	state, err := detectNetcaState(ctx, exec, spec.OracleHome, spec.ListenerName, partialPath, installedPath)
 	if err != nil {
 		return nil, fmt.Errorf("install: detect netca state on %s: %w", spec.Target, err)
 	}
@@ -138,7 +138,7 @@ func netcaSilentWithExec(ctx context.Context, exec host.Executor, spec NetcaSpec
 // The lsnrctl probe is version-agnostic: it matches the static substring
 // "STATUS of the LISTENER" present in 11g..23ai output, never a version
 // number.
-func detectNetcaState(ctx context.Context, exec host.Executor, listenerName, partialPath, installedPath string) (DetectionState, error) {
+func detectNetcaState(ctx context.Context, exec host.Executor, oracleHome, listenerName, partialPath, installedPath string) (DetectionState, error) {
 	hasInstalled, err := probeFile(ctx, exec, installedPath)
 	if err != nil {
 		return DetectionStateAbsent, err
@@ -149,7 +149,17 @@ func detectNetcaState(ctx context.Context, exec host.Executor, listenerName, par
 	// Live probe — a listener may exist from a prior provisioning run that
 	// did not record a dbx sentinel (e.g. earlier dbx version, or manual
 	// netca invocation). Treat that as Installed to avoid double-create.
-	live, err := exec.Run(ctx, "lsnrctl status "+shellEscape(listenerName))
+	//
+	// Qualify lsnrctl with $ORACLE_HOME and the absolute binary path:
+	// non-interactive SSH sessions on Grid Infrastructure hosts do NOT
+	// have $ORACLE_HOME/bin on $PATH, so a bare `lsnrctl` would fail with
+	// "command not found" and the probe would mis-report Absent.
+	probeCmd := fmt.Sprintf("env ORACLE_HOME=%s %s/bin/lsnrctl status %s",
+		shellEscape(oracleHome),
+		shellEscape(oracleHome),
+		shellEscape(listenerName),
+	)
+	live, err := exec.Run(ctx, probeCmd)
 	if err != nil {
 		return DetectionStateAbsent, err
 	}

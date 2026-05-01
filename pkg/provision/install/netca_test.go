@@ -28,7 +28,7 @@ func validNetcaSpec() NetcaSpec {
 func TestNetcaSilent(t *testing.T) {
 	const partial = "/u01/app/oracle/cfgtoollogs/dbx/netca.LISTENER.partial"
 	const installed = "/u01/app/oracle/cfgtoollogs/dbx/netca.LISTENER.installed"
-	const lsnrctl = "lsnrctl status LISTENER"
+	const lsnrctl = "env ORACLE_HOME=/u01/app/oracle/product/19c/dbhome_1 /u01/app/oracle/product/19c/dbhome_1/bin/lsnrctl status LISTENER"
 	const mkdir = "mkdir -p /u01/app/oracle/cfgtoollogs/dbx && : > /u01/app/oracle/cfgtoollogs/dbx/netca.LISTENER.partial"
 	const netca = "/u01/app/oracle/product/19c/dbhome_1/bin/netca -silent -responseFile /tmp/netca.rsp"
 	const mv = "mv /u01/app/oracle/cfgtoollogs/dbx/netca.LISTENER.partial /u01/app/oracle/cfgtoollogs/dbx/netca.LISTENER.installed"
@@ -292,7 +292,7 @@ func (e *netcaCtxCancelExec) Run(ctx context.Context, cmd string) (*host.RunResu
 func TestNetcaSilent_CtxCancelled_ReportsPartial(t *testing.T) {
 	const partial = "/u01/app/oracle/cfgtoollogs/dbx/netca.LISTENER.partial"
 	const installed = "/u01/app/oracle/cfgtoollogs/dbx/netca.LISTENER.installed"
-	const lsnrctl = "lsnrctl status LISTENER"
+	const lsnrctl = "env ORACLE_HOME=/u01/app/oracle/product/19c/dbhome_1 /u01/app/oracle/product/19c/dbhome_1/bin/lsnrctl status LISTENER"
 	const mkdir = "mkdir -p /u01/app/oracle/cfgtoollogs/dbx && : > /u01/app/oracle/cfgtoollogs/dbx/netca.LISTENER.partial"
 
 	mock := hosttest.NewMockExecutor()
