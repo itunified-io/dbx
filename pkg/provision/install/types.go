@@ -240,6 +240,66 @@ func (s AsmDiskLabelSpec) Validate() error {
 	return nil
 }
 
+// DbcaCreateDbSpec configures silent CDB creation via `dbca -silent
+// -createDatabase -responseFile <path>`. Phase D.4 of /lab-up.
+//
+// OracleBase is required because the two-phase sentinel pair lives under
+// <OracleBase>/cfgtoollogs/dbx/dbca.<DB_UNIQUE_NAME>.{partial,installed}.
+//
+// Passwords MUST be passed via files on the target host (SysPasswordFile,
+// SystemPasswordFile) — never on the command line where they would leak
+// into ps(1) output and audit records. The caller (skill) is responsible
+// for placing those files (mode 0600, oracle-owned) on the host before
+// invoking this primitive.
+type DbcaCreateDbSpec struct {
+	InstallSpec
+	// DbUniqueName is the DB_UNIQUE_NAME for the database (used in the
+	// sentinel path AND as the live-probe key for `srvctl status database`).
+	DbUniqueName string `json:"db_unique_name"`
+	// SysPasswordFile is an optional absolute path to a file on the
+	// target host containing the SYS password. dbca reads it via
+	// -sysPassword via -responseFile (caller may also embed the password
+	// in the response file). Both forms are supported; this field is a
+	// hint for the runbook only.
+	SysPasswordFile string `json:"sys_password_file,omitempty"`
+	// SystemPasswordFile is the analogous path for the SYSTEM password.
+	SystemPasswordFile string `json:"system_password_file,omitempty"`
+}
+
+// Validate extends InstallSpec.Validate with dbca-specific checks.
+func (s DbcaCreateDbSpec) Validate() error {
+	if err := s.InstallSpec.Validate(); err != nil {
+		return err
+	}
+	if strings.TrimSpace(s.OracleBase) == "" {
+		return fmt.Errorf("install: oracle_base is required for dbca (sentinel path)")
+	}
+	if strings.TrimSpace(s.ResponseFilePath) == "" {
+		return fmt.Errorf("install: response_file_path is required (caller must render + scp the dbca .rsp first)")
+	}
+	if strings.TrimSpace(s.DbUniqueName) == "" {
+		return fmt.Errorf("install: db_unique_name is required")
+	}
+	// Reject control chars + shell metachars on db_unique_name. Mirrors
+	// AsmcaSpec/NetcaSpec defense-in-depth: db_unique_name is interpolated
+	// into both the srvctl probe AND the sentinel filename, neither of
+	// which tolerate metacharacters.
+	const disallowed = "\n\r \t$`!&|;'\"\\<>*?(){}[]"
+	if strings.ContainsAny(s.DbUniqueName, disallowed) {
+		return fmt.Errorf("install: db_unique_name contains disallowed character: %q", s.DbUniqueName)
+	}
+	// Password-file paths are optional; reject control chars only.
+	for _, f := range []struct{ name, value string }{
+		{"sys_password_file", s.SysPasswordFile},
+		{"system_password_file", s.SystemPasswordFile},
+	} {
+		if f.value != "" && strings.ContainsAny(f.value, "\n\r") {
+			return fmt.Errorf("install: field contains control character: %s", f.name)
+		}
+	}
+	return nil
+}
+
 // NetcaSpec configures listener creation via netca silent. Used during
 // Phase D.2 (post-Grid, pre-DBCA) to ensure a LISTENER exists for client
 // connections AND during Phase E.2 to add static services on a standby

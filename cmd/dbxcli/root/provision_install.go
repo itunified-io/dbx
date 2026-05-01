@@ -29,6 +29,72 @@ func NewInstallCmd() *cobra.Command {
 	cmd.AddCommand(newInstallAsmcaCmd())
 	cmd.AddCommand(newInstallNetcaCmd())
 	cmd.AddCommand(newInstallAsmLabelCmd())
+	cmd.AddCommand(newInstallDbcaCmd())
+	return cmd
+}
+
+// newInstallDbcaCmd: dbxcli provision install dbca --target X --oracle-home Y --oracle-base Z --response-file W --db-unique-name ORCL [--sys-password-file F] [--system-password-file F] [--reset]
+func newInstallDbcaCmd() *cobra.Command {
+	var (
+		spec  install.DbcaCreateDbSpec
+		reset bool
+	)
+	cmd := &cobra.Command{
+		Use:   "dbca",
+		Short: "Create CDB via dbca -silent -createDatabase (two-phase sentinel)",
+		Long: `Create an Oracle CDB via dbca silent. Phase D.4 of /lab-up — runs after
+Grid + DB Home + listener and before PDB creation / Data Guard standby
+cloning.
+
+Idempotency: NON-IDEMPOTENT primitive — uses a two-phase sentinel
+(<oracle_base>/cfgtoollogs/dbx/dbca.<DB_UNIQUE_NAME>.partial → dbca.<DB_UNIQUE_NAME>.installed).
+Detection ALSO probes ` + "`srvctl status database -d <unique>`" + ` so a
+pre-existing database is recognised without forcing a sentinel.
+
+The caller (skill) is responsible for rendering and SCPing the dbca .rsp
+response file to the target host before invoking this command. The
+response file format is multi-version; the skill picks the correct
+template per Oracle release (19c / 23ai / 26ai).
+
+Reset (MVP): --reset on installed/partial state prints a manual recovery
+runbook to stderr and skips. The destructive ` + "`dbca -silent -deleteDatabase`" + `
+step is deferred to a reverter follow-up plan.`,
+		Example: `  dbxcli provision install dbca --target ext3adm1 \
+    --oracle-home /u01/app/oracle/product/19c/dbhome_1 \
+    --oracle-base /u01/app/oracle \
+    --response-file /tmp/dbca.rsp \
+    --db-unique-name ORCL`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// TODO(#519): wire license.RequireBundle("provision") once helper ships
+			if spec.Target == "" {
+				if pt := cmd.InheritedFlags().Lookup("target"); pt != nil {
+					spec.Target = pt.Value.String()
+				}
+			}
+			res, err := install.DbcaCreateDb(context.Background(), spec, reset)
+			if err != nil {
+				return err
+			}
+			out, err := json.MarshalIndent(res, "", "  ")
+			if err != nil {
+				return err
+			}
+			fmt.Println(string(out))
+			return nil
+		},
+	}
+	cmd.Flags().StringVar(&spec.Target, "target", "", "target name (overrides provision --target)")
+	cmd.Flags().StringVar(&spec.OracleHome, "oracle-home", "", "$ORACLE_HOME containing bin/dbca + bin/srvctl")
+	cmd.Flags().StringVar(&spec.OracleBase, "oracle-base", "", "$ORACLE_BASE (sentinel root)")
+	cmd.Flags().StringVar(&spec.ResponseFilePath, "response-file", "", "Absolute path on host to rendered dbca .rsp")
+	cmd.Flags().StringVar(&spec.DbUniqueName, "db-unique-name", "", "DB_UNIQUE_NAME (used as sentinel key + srvctl probe target)")
+	cmd.Flags().StringVar(&spec.SysPasswordFile, "sys-password-file", "", "Optional: absolute path to file on host containing SYS password (mode 0600)")
+	cmd.Flags().StringVar(&spec.SystemPasswordFile, "system-password-file", "", "Optional: absolute path to file on host containing SYSTEM password (mode 0600)")
+	cmd.Flags().BoolVar(&reset, "reset", false, "Print manual recovery runbook (NON-DESTRUCTIVE in MVP)")
+	_ = cmd.MarkFlagRequired("oracle-home")
+	_ = cmd.MarkFlagRequired("oracle-base")
+	_ = cmd.MarkFlagRequired("response-file")
+	_ = cmd.MarkFlagRequired("db-unique-name")
 	return cmd
 }
 
