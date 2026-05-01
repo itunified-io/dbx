@@ -139,6 +139,107 @@ func (s AsmcaSpec) Validate() error {
 	return nil
 }
 
+// AsmDiskLabelImpl identifies which raw-disk labeling backend is used.
+// One of "asmlib" (Oracle ASMlib via /usr/sbin/oracleasm) or "afd"
+// (Oracle ASM Filter Driver via <grid_home>/bin/asmcmd afd_label).
+const (
+	AsmDiskLabelImplAsmlib = "asmlib"
+	AsmDiskLabelImplAFD    = "afd"
+)
+
+// AsmLabelEntry pairs a raw block device with the ASM label to assign.
+type AsmLabelEntry struct {
+	Name   string `json:"name"`   // e.g. "DATA1"
+	Device string `json:"device"` // e.g. "/dev/sdb"
+}
+
+// AsmDiskLabelSpec configures raw-disk → ASM-discoverable labeling.
+// Phase D.1 prerequisite to AsmcaSilent. Per-label sentinels live at
+// <oracle_base>/cfgtoollogs/dbx/asm-label.<NAME>.{partial,installed}.
+type AsmDiskLabelSpec struct {
+	Target         string          `json:"target"`
+	GridHome       string          `json:"grid_home"`      // $GRID_HOME (provides bin/asmcmd for AFD)
+	OracleBase     string          `json:"oracle_base"`    // sentinel root
+	Implementation string          `json:"implementation"` // "asmlib" | "afd"
+	Labels         []AsmLabelEntry `json:"labels"`
+}
+
+// AsmDiskLabelResult lists per-label results.
+type AsmDiskLabelResult struct {
+	Implementation string                   `json:"implementation"`
+	Labels         []AsmDiskLabelLabelResult `json:"labels,omitempty"`
+}
+
+// AsmDiskLabelLabelResult is the per-label outcome.
+type AsmDiskLabelLabelResult struct {
+	Name     string         `json:"name"`
+	Device   string         `json:"device"`
+	Detected DetectionState `json:"detected"`
+	Skipped  bool           `json:"skipped"`
+	ExitCode int            `json:"exit_code"`
+	LogTail  string         `json:"log_tail,omitempty"`
+}
+
+// Validate returns an error if required fields are missing or contain
+// disallowed characters. Mirrors AsmcaSpec/NetcaSpec defense-in-depth:
+// every shell-interpolated string is checked for control chars + shell
+// metacharacters in addition to shellEscape at the call site.
+func (s AsmDiskLabelSpec) Validate() error {
+	if strings.TrimSpace(s.Target) == "" {
+		return fmt.Errorf("install: target is required")
+	}
+	if strings.TrimSpace(s.GridHome) == "" {
+		return fmt.Errorf("install: grid_home is required")
+	}
+	if strings.TrimSpace(s.OracleBase) == "" {
+		return fmt.Errorf("install: oracle_base is required for asm-label (sentinel path)")
+	}
+	switch s.Implementation {
+	case AsmDiskLabelImplAsmlib, AsmDiskLabelImplAFD:
+	default:
+		return fmt.Errorf("install: implementation must be %q or %q, got %q",
+			AsmDiskLabelImplAsmlib, AsmDiskLabelImplAFD, s.Implementation)
+	}
+	if len(s.Labels) == 0 {
+		return fmt.Errorf("install: labels list is required")
+	}
+	// Reject control chars on the path-like fields.
+	for _, f := range []struct{ name, value string }{
+		{"target", s.Target},
+		{"grid_home", s.GridHome},
+		{"oracle_base", s.OracleBase},
+	} {
+		if strings.ContainsAny(f.value, "\n\r") {
+			return fmt.Errorf("install: field contains control character: %s", f.name)
+		}
+	}
+	// Per-label defense-in-depth: reject control chars + shell metachars
+	// on both Name and Device. shellEscape at the call site handles
+	// quoting, but these fields end up in sentinel filenames + lsblk-
+	// adjacent commands where embedded metachars must never reach.
+	const disallowed = "\n\r \t$`!&|;'\"\\<>*?(){}[]"
+	seen := map[string]bool{}
+	for i, l := range s.Labels {
+		if strings.TrimSpace(l.Name) == "" {
+			return fmt.Errorf("install: labels[%d].name is required", i)
+		}
+		if strings.TrimSpace(l.Device) == "" {
+			return fmt.Errorf("install: labels[%d].device is required", i)
+		}
+		if strings.ContainsAny(l.Name, disallowed) {
+			return fmt.Errorf("install: labels[%d].name contains disallowed character: %q", i, l.Name)
+		}
+		if strings.ContainsAny(l.Device, disallowed+",") {
+			return fmt.Errorf("install: labels[%d].device contains disallowed character: %q", i, l.Device)
+		}
+		if seen[l.Name] {
+			return fmt.Errorf("install: labels[%d].name %q is duplicated", i, l.Name)
+		}
+		seen[l.Name] = true
+	}
+	return nil
+}
+
 // NetcaSpec configures listener creation via netca silent. Used during
 // Phase D.2 (post-Grid, pre-DBCA) to ensure a LISTENER exists for client
 // connections AND during Phase E.2 to add static services on a standby

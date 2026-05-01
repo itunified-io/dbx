@@ -28,6 +28,86 @@ func NewInstallCmd() *cobra.Command {
 	cmd.AddCommand(newInstallRootshCmd())
 	cmd.AddCommand(newInstallAsmcaCmd())
 	cmd.AddCommand(newInstallNetcaCmd())
+	cmd.AddCommand(newInstallAsmLabelCmd())
+	return cmd
+}
+
+// newInstallAsmLabelCmd: dbxcli provision install asm-label --target X --grid-home Y --oracle-base Z --impl asmlib|afd --labels DATA1:/dev/sdb,DATA2:/dev/sdc [--reset]
+func newInstallAsmLabelCmd() *cobra.Command {
+	var (
+		spec       install.AsmDiskLabelSpec
+		labelsFlag string
+		reset      bool
+	)
+	cmd := &cobra.Command{
+		Use:   "asm-label",
+		Short: "Label raw disks for ASM discovery (asmlib or AFD; per-label two-phase sentinel)",
+		Long: `Label raw block devices via ASMlib (oracleasm) or Oracle ASM Filter
+Driver (AFD) so the disks become discoverable as ASM disks. This is a
+Phase D.1 prerequisite that runs BEFORE asmca (which creates the
+diskgroup over labeled devices).
+
+Idempotency: NON-IDEMPOTENT primitive — uses a per-label two-phase
+sentinel (<oracle_base>/cfgtoollogs/dbx/asm-label.<NAME>.partial →
+asm-label.<NAME>.installed). Detection ALSO probes oracleasm listdisks
+(asmlib) or asmcmd afd_lslbl <device> (afd) so a pre-existing label is
+recognised without forcing a sentinel.
+
+Reset (MVP): --reset on installed/partial state for any label prints a
+manual recovery runbook to stderr and skips that label. The destructive
+label-removal step is deferred to a reverter follow-up plan.`,
+		Example: `  dbxcli provision install asm-label --target ext3adm1 \
+    --grid-home /u01/app/19c/grid \
+    --oracle-base /u01/app/grid \
+    --impl asmlib \
+    --labels DATA1:/dev/sdb,DATA2:/dev/sdc`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// TODO(#519): wire license.RequireBundle("provision") once helper ships
+			if spec.Target == "" {
+				if pt := cmd.InheritedFlags().Lookup("target"); pt != nil {
+					spec.Target = pt.Value.String()
+				}
+			}
+			if labelsFlag == "" {
+				return fmt.Errorf("--labels is required (comma-separated NAME:DEVICE pairs)")
+			}
+			for _, pair := range strings.Split(labelsFlag, ",") {
+				parts := strings.SplitN(pair, ":", 2)
+				if len(parts) != 2 {
+					return fmt.Errorf("--labels pair %q must be NAME:DEVICE", pair)
+				}
+				spec.Labels = append(spec.Labels, install.AsmLabelEntry{
+					Name:   parts[0],
+					Device: parts[1],
+				})
+			}
+			res, err := install.AsmDiskLabel(context.Background(), spec, reset)
+			if err != nil {
+				// Print partial result before returning so operators see
+				// per-label state on failure.
+				if res != nil {
+					out, _ := json.MarshalIndent(res, "", "  ")
+					fmt.Println(string(out))
+				}
+				return err
+			}
+			out, err := json.MarshalIndent(res, "", "  ")
+			if err != nil {
+				return err
+			}
+			fmt.Println(string(out))
+			return nil
+		},
+	}
+	cmd.Flags().StringVar(&spec.Target, "target", "", "target name (overrides provision --target)")
+	cmd.Flags().StringVar(&spec.GridHome, "grid-home", "", "$GRID_HOME containing bin/asmcmd (used for AFD; required for both impls)")
+	cmd.Flags().StringVar(&spec.OracleBase, "oracle-base", "", "$ORACLE_BASE for grid (sentinel root)")
+	cmd.Flags().StringVar(&spec.Implementation, "impl", install.AsmDiskLabelImplAFD, "Labeling implementation: asmlib | afd")
+	cmd.Flags().StringVar(&labelsFlag, "labels", "", "Comma-separated NAME:DEVICE pairs (e.g. DATA1:/dev/sdb,DATA2:/dev/sdc)")
+	cmd.Flags().BoolVar(&reset, "reset", false, "Print manual recovery runbook (NON-DESTRUCTIVE in MVP)")
+	_ = cmd.MarkFlagRequired("grid-home")
+	_ = cmd.MarkFlagRequired("oracle-base")
+	_ = cmd.MarkFlagRequired("labels")
 	return cmd
 }
 
