@@ -23,6 +23,47 @@ func NewInstallCmd() *cobra.Command {
 		Short: "Oracle install primitives (grid, dbhome, root-sh, asmca, netca, asm-label)",
 	}
 	cmd.AddCommand(newInstallGridCmd())
+	cmd.AddCommand(newInstallDbhomeCmd())
+	return cmd
+}
+
+// newInstallDbhomeCmd: dbxcli provision install dbhome --target X --oracle-home Y --software-staging Z --response-file W [--reset]
+func newInstallDbhomeCmd() *cobra.Command {
+	var (
+		spec  install.InstallSpec
+		reset bool
+	)
+	cmd := &cobra.Command{
+		Use:   "dbhome",
+		Short: "Run runInstaller -silent for Oracle DB Home 19c",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// TODO(#519): wire license.RequireBundle("provision") once helper ships
+			// spec.Target is bound directly via --target flag; inherit from parent
+			// persistent flag if not set on this leaf.
+			if spec.Target == "" {
+				if pt := cmd.InheritedFlags().Lookup("target"); pt != nil {
+					spec.Target = pt.Value.String()
+				}
+			}
+			res, err := install.DBHomeInstall(context.Background(), spec, reset)
+			if err != nil {
+				return err
+			}
+			out, err := json.MarshalIndent(res, "", "  ")
+			if err != nil {
+				return err
+			}
+			fmt.Println(string(out))
+			return nil
+		},
+	}
+	cmd.Flags().StringVar(&spec.Target, "target", "", "target name (overrides provision --target)")
+	cmd.Flags().StringVar(&spec.OracleHome, "oracle-home", "", "$ORACLE_HOME (e.g. /u01/app/oracle/product/19c/dbhome_1)")
+	cmd.Flags().StringVar(&spec.OracleBase, "oracle-base", "", "$ORACLE_BASE (e.g. /u01/app/oracle)")
+	cmd.Flags().StringVar(&spec.SoftwareStaging, "software-staging", "", "Path on host where DB home software is unzipped")
+	cmd.Flags().StringVar(&spec.ResponseFilePath, "response-file", "", "Absolute path on host to rendered .rsp file")
+	cmd.Flags().BoolVar(&reset, "reset", false, "Reset prior install state (NOT IMPLEMENTED YET)")
+	_ = cmd.MarkFlagRequired("oracle-home")
 	return cmd
 }
 
