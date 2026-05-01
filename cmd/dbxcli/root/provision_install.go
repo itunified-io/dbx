@@ -24,6 +24,7 @@ func NewInstallCmd() *cobra.Command {
 	}
 	cmd.AddCommand(newInstallGridCmd())
 	cmd.AddCommand(newInstallDbhomeCmd())
+	cmd.AddCommand(newInstallRootshCmd())
 	return cmd
 }
 
@@ -63,6 +64,41 @@ func newInstallDbhomeCmd() *cobra.Command {
 	cmd.Flags().StringVar(&spec.SoftwareStaging, "software-staging", "", "Path on host where DB home software is unzipped")
 	cmd.Flags().StringVar(&spec.ResponseFilePath, "response-file", "", "Absolute path on host to rendered .rsp file")
 	cmd.Flags().BoolVar(&reset, "reset", false, "Reset prior install state (NOT IMPLEMENTED YET)")
+	_ = cmd.MarkFlagRequired("oracle-home")
+	return cmd
+}
+
+// newInstallRootshCmd: dbxcli provision install root-sh --target X --oracle-home Y [--reset]
+func newInstallRootshCmd() *cobra.Command {
+	var (
+		spec  install.InstallSpec
+		reset bool
+	)
+	cmd := &cobra.Command{
+		Use:   "root-sh",
+		Short: "Run <OracleHome>/root.sh idempotently after a runInstaller",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// TODO(#519): wire license.RequireBundle("provision") once helper ships
+			if spec.Target == "" {
+				if pt := cmd.InheritedFlags().Lookup("target"); pt != nil {
+					spec.Target = pt.Value.String()
+				}
+			}
+			res, err := install.RootSh(context.Background(), spec, reset)
+			if err != nil {
+				return err
+			}
+			out, err := json.MarshalIndent(res, "", "  ")
+			if err != nil {
+				return err
+			}
+			fmt.Println(string(out))
+			return nil
+		},
+	}
+	cmd.Flags().StringVar(&spec.Target, "target", "", "target name (overrides provision --target)")
+	cmd.Flags().StringVar(&spec.OracleHome, "oracle-home", "", "$ORACLE_HOME or $GRID_HOME containing root.sh")
+	cmd.Flags().BoolVar(&reset, "reset", false, "Re-run root.sh even if touchfile exists (root.sh is idempotent)")
 	_ = cmd.MarkFlagRequired("oracle-home")
 	return cmd
 }
