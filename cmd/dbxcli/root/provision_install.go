@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/itunified-io/dbx/pkg/provision/install"
 	"github.com/spf13/cobra"
@@ -25,6 +26,70 @@ func NewInstallCmd() *cobra.Command {
 	cmd.AddCommand(newInstallGridCmd())
 	cmd.AddCommand(newInstallDbhomeCmd())
 	cmd.AddCommand(newInstallRootshCmd())
+	cmd.AddCommand(newInstallAsmcaCmd())
+	return cmd
+}
+
+// newInstallAsmcaCmd: dbxcli provision install asmca --target X --oracle-home Y --oracle-base Z --dg-name DATA --disks /dev/sdb,/dev/sdc [--redundancy EXTERNAL] [--au-size-mb 4] [--reset]
+func newInstallAsmcaCmd() *cobra.Command {
+	var (
+		spec       install.AsmcaSpec
+		disksFlag  string
+		reset      bool
+	)
+	cmd := &cobra.Command{
+		Use:   "asmca",
+		Short: "Create initial ASM diskgroup via asmca -silent (two-phase sentinel)",
+		Long: `Create the initial ASM diskgroup (DATA, RECO) for an Oracle Grid Infrastructure
+installation. Subsequent diskgroup operations should go through the
+mcp-oracle-ee-asm tools, which assume ASM is already up.
+
+Idempotency: NON-IDEMPOTENT primitive — uses a two-phase sentinel
+(<oracle_base>/cfgtoollogs/dbx/asmca.<DG>.partial → asmca.<DG>.installed).
+Detection is version-agnostic.
+
+Reset (MVP): --reset on installed/partial state prints a manual recovery
+runbook to stderr and skips. The destructive ` + "`drop diskgroup`" + ` step is
+deferred to a reverter follow-up plan.`,
+		Example: `  dbxcli provision install asmca --target ext3adm1 \
+    --oracle-home /u01/app/19c/grid \
+    --oracle-base /u01/app/grid \
+    --dg-name DATA --disks /dev/sdb,/dev/sdc \
+    --redundancy EXTERNAL --au-size-mb 4`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// TODO(#519): wire license.RequireBundle("provision") once helper ships
+			if spec.Target == "" {
+				if pt := cmd.InheritedFlags().Lookup("target"); pt != nil {
+					spec.Target = pt.Value.String()
+				}
+			}
+			if disksFlag == "" {
+				return fmt.Errorf("--disks is required (comma-separated)")
+			}
+			spec.Disks = strings.Split(disksFlag, ",")
+			res, err := install.AsmcaSilent(context.Background(), spec, reset)
+			if err != nil {
+				return err
+			}
+			out, err := json.MarshalIndent(res, "", "  ")
+			if err != nil {
+				return err
+			}
+			fmt.Println(string(out))
+			return nil
+		},
+	}
+	cmd.Flags().StringVar(&spec.Target, "target", "", "target name (overrides provision --target)")
+	cmd.Flags().StringVar(&spec.OracleHome, "oracle-home", "", "$GRID_HOME containing bin/asmca")
+	cmd.Flags().StringVar(&spec.OracleBase, "oracle-base", "", "$ORACLE_BASE for grid (sentinel root)")
+	cmd.Flags().StringVar(&spec.DGName, "dg-name", "", "Diskgroup name (e.g. DATA)")
+	cmd.Flags().StringVar(&spec.Redundancy, "redundancy", "EXTERNAL", "EXTERNAL | NORMAL | HIGH")
+	cmd.Flags().IntVar(&spec.AUSizeMB, "au-size-mb", 4, "Allocation Unit size in MB")
+	cmd.Flags().StringVar(&disksFlag, "disks", "", "Comma-separated disk paths or AFD labels")
+	cmd.Flags().BoolVar(&reset, "reset", false, "Print manual recovery runbook (NON-DESTRUCTIVE in MVP)")
+	_ = cmd.MarkFlagRequired("oracle-home")
+	_ = cmd.MarkFlagRequired("oracle-base")
+	_ = cmd.MarkFlagRequired("dg-name")
 	return cmd
 }
 

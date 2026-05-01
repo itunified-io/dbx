@@ -85,3 +85,45 @@ func (s DetectionState) String() string {
 		return "unknown"
 	}
 }
+
+// AsmcaSpec configures an initial ASM diskgroup creation. Used ONLY for
+// the first DG (DATA, RECO) — subsequent diskgroup operations go through
+// mcp-oracle-ee-asm tools which assume ASM is already up.
+type AsmcaSpec struct {
+	InstallSpec
+	DGName     string   `json:"dg_name"`    // e.g. "DATA"
+	Redundancy string   `json:"redundancy"` // "EXTERNAL" | "NORMAL" | "HIGH"
+	AUSizeMB   int      `json:"au_size_mb"` // e.g. 4
+	Disks      []string `json:"disks"`      // ["/dev/sdb", "/dev/sdc"] OR ["AFD:DATA1", ...]
+}
+
+// Validate extends InstallSpec.Validate with DG-specific checks.
+// OracleBase is required (sentinels live under <oracle_base>/cfgtoollogs/dbx/).
+func (s AsmcaSpec) Validate() error {
+	if err := s.InstallSpec.Validate(); err != nil {
+		return err
+	}
+	if strings.TrimSpace(s.OracleBase) == "" {
+		return fmt.Errorf("install: oracle_base is required for asmca (sentinel path)")
+	}
+	if strings.TrimSpace(s.DGName) == "" {
+		return fmt.Errorf("install: dg_name is required")
+	}
+	switch s.Redundancy {
+	case "EXTERNAL", "NORMAL", "HIGH":
+	default:
+		return fmt.Errorf("install: redundancy must be EXTERNAL/NORMAL/HIGH, got %q", s.Redundancy)
+	}
+	if s.AUSizeMB <= 0 {
+		return fmt.Errorf("install: au_size_mb must be > 0")
+	}
+	if len(s.Disks) == 0 {
+		return fmt.Errorf("install: disks list is required")
+	}
+	for _, d := range s.Disks {
+		if strings.ContainsAny(d, "\n\r,") {
+			return fmt.Errorf("install: disk entry contains control character or comma: %q", d)
+		}
+	}
+	return nil
+}
