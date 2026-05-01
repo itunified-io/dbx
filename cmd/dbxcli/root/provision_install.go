@@ -10,6 +10,20 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// resolveTarget returns the leaf-local --target if set, else the inherited
+// parent persistent --target, else a usage error. The error is intended to
+// surface BEFORE Validate so the caller sees a cobra-style "required flag"
+// message instead of a deeper runtime spec.Validate() failure.
+func resolveTarget(cmd *cobra.Command, localTarget string) (string, error) {
+	if localTarget != "" {
+		return localTarget, nil
+	}
+	if p := cmd.InheritedFlags().Lookup("target"); p != nil && p.Value.String() != "" {
+		return p.Value.String(), nil
+	}
+	return "", fmt.Errorf("required flag --target not set (pass on leaf or on parent provision command)")
+}
+
 // NewInstallCmd returns the `provision install` parent subcommand.
 // Each leaf delegates to a function in dbx/pkg/provision/install/.
 //
@@ -76,11 +90,11 @@ reverter follow-up plan.`,
     --datafile-dest +DATA`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// TODO(#519): wire license.RequireBundle("provision") once helper ships
-			if spec.Target == "" {
-				if pt := cmd.InheritedFlags().Lookup("target"); pt != nil {
-					spec.Target = pt.Value.String()
-				}
+			t, err := resolveTarget(cmd, spec.Target)
+			if err != nil {
+				return err
 			}
+			spec.Target = t
 			res, err := install.PdbCreate(context.Background(), spec, reset)
 			if err != nil {
 				return err
@@ -143,11 +157,11 @@ step is deferred to a reverter follow-up plan.`,
     --db-unique-name ORCL`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// TODO(#519): wire license.RequireBundle("provision") once helper ships
-			if spec.Target == "" {
-				if pt := cmd.InheritedFlags().Lookup("target"); pt != nil {
-					spec.Target = pt.Value.String()
-				}
+			t, err := resolveTarget(cmd, spec.Target)
+			if err != nil {
+				return err
 			}
+			spec.Target = t
 			res, err := install.DbcaCreateDb(context.Background(), spec, reset)
 			if err != nil {
 				return err
@@ -206,11 +220,11 @@ label-removal step is deferred to a reverter follow-up plan.`,
     --labels DATA1:/dev/sdb,DATA2:/dev/sdc`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// TODO(#519): wire license.RequireBundle("provision") once helper ships
-			if spec.Target == "" {
-				if pt := cmd.InheritedFlags().Lookup("target"); pt != nil {
-					spec.Target = pt.Value.String()
-				}
+			t, err := resolveTarget(cmd, spec.Target)
+			if err != nil {
+				return err
 			}
+			spec.Target = t
 			if labelsFlag == "" {
 				return fmt.Errorf("--labels is required (comma-separated NAME:DEVICE pairs)")
 			}
@@ -283,11 +297,11 @@ deferred to a reverter follow-up plan.`,
     --listener-name LISTENER --port 1521`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// TODO(#519): wire license.RequireBundle("provision") once helper ships
-			if spec.Target == "" {
-				if pt := cmd.InheritedFlags().Lookup("target"); pt != nil {
-					spec.Target = pt.Value.String()
-				}
+			t, err := resolveTarget(cmd, spec.Target)
+			if err != nil {
+				return err
 			}
+			spec.Target = t
 			res, err := install.NetcaSilent(context.Background(), spec, reset)
 			if err != nil {
 				return err
@@ -341,11 +355,11 @@ deferred to a reverter follow-up plan.`,
     --redundancy EXTERNAL --au-size-mb 4`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// TODO(#519): wire license.RequireBundle("provision") once helper ships
-			if spec.Target == "" {
-				if pt := cmd.InheritedFlags().Lookup("target"); pt != nil {
-					spec.Target = pt.Value.String()
-				}
+			t, err := resolveTarget(cmd, spec.Target)
+			if err != nil {
+				return err
 			}
+			spec.Target = t
 			if disksFlag == "" {
 				return fmt.Errorf("--disks is required (comma-separated)")
 			}
@@ -387,13 +401,11 @@ func newInstallDbhomeCmd() *cobra.Command {
 		Short: "Run runInstaller -silent for Oracle DB Home 19c",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// TODO(#519): wire license.RequireBundle("provision") once helper ships
-			// spec.Target is bound directly via --target flag; inherit from parent
-			// persistent flag if not set on this leaf.
-			if spec.Target == "" {
-				if pt := cmd.InheritedFlags().Lookup("target"); pt != nil {
-					spec.Target = pt.Value.String()
-				}
+			t, err := resolveTarget(cmd, spec.Target)
+			if err != nil {
+				return err
 			}
+			spec.Target = t
 			res, err := install.DBHomeInstall(context.Background(), spec, reset)
 			if err != nil {
 				return err
@@ -427,11 +439,11 @@ func newInstallRootshCmd() *cobra.Command {
 		Short: "Run <OracleHome>/root.sh idempotently after a runInstaller",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// TODO(#519): wire license.RequireBundle("provision") once helper ships
-			if spec.Target == "" {
-				if pt := cmd.InheritedFlags().Lookup("target"); pt != nil {
-					spec.Target = pt.Value.String()
-				}
+			t, err := resolveTarget(cmd, spec.Target)
+			if err != nil {
+				return err
 			}
+			spec.Target = t
 			res, err := install.RootSh(context.Background(), spec, reset)
 			if err != nil {
 				return err
@@ -474,15 +486,11 @@ Idempotency:
     --oracle-base /u01/app/grid \
     --response-file /tmp/grid.rsp`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// Inherit --target from the provision parent persistent flag if
-			// not set directly on this leaf.
-			if spec.Target == "" {
-				if t, _ := cmd.Flags().GetString("target"); t != "" {
-					spec.Target = t
-				} else if pt := cmd.InheritedFlags().Lookup("target"); pt != nil {
-					spec.Target = pt.Value.String()
-				}
+			t, err := resolveTarget(cmd, spec.Target)
+			if err != nil {
+				return err
 			}
+			spec.Target = t
 			res, err := install.GridInstall(context.Background(), spec, reset)
 			if err != nil {
 				return err

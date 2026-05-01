@@ -47,6 +47,12 @@ func dbcaCreateDbWithExec(ctx context.Context, exec host.Executor, spec DbcaCrea
 
 	state, err := detectDbcaState(ctx, exec, spec.OracleHome, spec.DbUniqueName, partialPath, installedPath)
 	if err != nil {
+		// If detection reported Partial (e.g. ctx cancelled mid-srvctl probe),
+		// preserve that annotation so the caller sees Partial + error rather
+		// than a bare error.
+		if state == DetectionStatePartial {
+			return &InstallResult{Detected: DetectionStatePartial}, fmt.Errorf("install: detect dbca state on %s: %w", spec.Target, err)
+		}
 		return nil, fmt.Errorf("install: detect dbca state on %s: %w", spec.Target, err)
 	}
 
@@ -161,7 +167,13 @@ func detectDbcaState(ctx context.Context, exec host.Executor, oracleHome, dbUniq
 	)
 	live, err := exec.Run(ctx, probeCmd)
 	if err != nil {
-		return DetectionStateAbsent, err
+		// Distinguish ctx cancel (remote process may still be running →
+		// Partial) from a generic transport error (DB existence unknown →
+		// Absent + error is the honest answer; Partial would be a lie).
+		if ctx.Err() != nil {
+			return DetectionStatePartial, fmt.Errorf("srvctl probe interrupted; remote process may still be running: %w", err)
+		}
+		return DetectionStateAbsent, fmt.Errorf("srvctl probe transport error: %w", err)
 	}
 	if live.ExitCode == 0 {
 		return DetectionStateInstalled, nil

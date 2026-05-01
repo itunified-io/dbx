@@ -293,3 +293,33 @@ func TestDbcaCreateDb_CtxCancelled_ReportsPartial(t *testing.T) {
 	assert.Contains(t, err.Error(), "interrupted")
 	assert.Contains(t, err.Error(), "may still be running")
 }
+
+// TestDetectDbcaState_CtxCancelDuringSrvctl_ReportsPartial covers the case
+// where the srvctl live probe transport-fails because the local context was
+// cancelled. The remote srvctl may still be running, so we report Partial
+// (not Absent) and propagate that annotation up through the caller.
+func TestDetectDbcaState_CtxCancelDuringSrvctl_ReportsPartial(t *testing.T) {
+	const partial = "/u01/app/oracle/cfgtoollogs/dbx/dbca.ORCL.partial"
+	const installed = "/u01/app/oracle/cfgtoollogs/dbx/dbca.ORCL.installed"
+	const srvctl = "env ORACLE_HOME=/u01/app/oracle/product/19c/dbhome_1 /u01/app/oracle/product/19c/dbhome_1/bin/srvctl status database -d ORCL"
+
+	mock := hosttest.NewMockExecutor()
+	mock.OnCommand("test -f " + installed).Returns(1, "", "")
+	// srvctl call is intercepted and ctx-cancelled by the wrapper below.
+
+	ctx, cancel := context.WithCancel(context.Background())
+	ex := &dbcaCtxCancelExec{
+		inner:       mock,
+		cancelAfter: 1, // 1 probe (installed) + then cancel during srvctl
+		cancel:      cancel,
+		wrapErr:     errors.New("transport: connection closed"),
+	}
+
+	// Direct call into detectDbcaState to verify the unit-level contract.
+	state, err := detectDbcaState(ctx, ex, "/u01/app/oracle/product/19c/dbhome_1", "ORCL", partial, installed)
+	require.Error(t, err)
+	assert.Equal(t, DetectionStatePartial, state)
+	assert.Contains(t, err.Error(), "interrupted")
+	assert.Contains(t, err.Error(), "may still be running")
+	_ = srvctl // referenced for documentation parity with test above
+}
