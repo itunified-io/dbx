@@ -28,5 +28,6 @@ Use 'dbxcli provision install --help' for install primitives,
 'dbxcli provision pdb --help' for PDB lifecycle.`,
 	}
 	cmd.PersistentFlags().String("target", "", "target name (from ~/.dbx/targets/)")
+	cmd.AddCommand(NewInstallCmd())
 	return cmd
 }
