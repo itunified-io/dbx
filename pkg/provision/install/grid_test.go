@@ -23,7 +23,7 @@ func TestGridInstall(t *testing.T) {
 		{
 			name: "DetectsExistingInstall_Skips",
 			setupMock: func(m *hosttest.MockExecutor) {
-				m.OnCommand("test -f /etc/oraInst.loc && cat /etc/oraInst.loc").
+				m.OnCommand("test -f /etc/oraInst.loc").
 					Returns(0, "inventory_loc=/u01/app/oraInventory\ninst_group=oinstall\n", "")
 				m.OnCommand("test -d /u01/app/19c/grid/inventory && ls -A /u01/app/19c/grid/inventory | head -1").
 					Returns(0, "ContentsXML\n", "")
@@ -35,7 +35,7 @@ func TestGridInstall(t *testing.T) {
 		{
 			name: "AbsentState_RunsInstaller",
 			setupMock: func(m *hosttest.MockExecutor) {
-				m.OnCommand("test -f /etc/oraInst.loc && cat /etc/oraInst.loc").Returns(1, "", "")
+				m.OnCommand("test -f /etc/oraInst.loc").Returns(1, "", "")
 				m.OnCommand("test -d /u01/app/19c/grid/inventory && ls -A /u01/app/19c/grid/inventory | head -1").
 					Returns(1, "", "")
 				m.OnCommandPattern(`/u01/app/19c/grid/runInstaller -silent -responseFile /tmp/grid\.rsp.*`).
@@ -58,7 +58,7 @@ func TestGridInstall(t *testing.T) {
 		{
 			name: "PartialState_AbortsWithoutReset",
 			setupMock: func(m *hosttest.MockExecutor) {
-				m.OnCommand("test -f /etc/oraInst.loc && cat /etc/oraInst.loc").
+				m.OnCommand("test -f /etc/oraInst.loc").
 					Returns(0, "inventory_loc=/u01/app/oraInventory\n", "")
 				m.OnCommand("test -d /u01/app/19c/grid/inventory && ls -A /u01/app/19c/grid/inventory | head -1").
 					Returns(1, "", "")

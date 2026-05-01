@@ -60,6 +60,10 @@ func dbhomeInstallWithExec(ctx context.Context, exec host.Executor, spec Install
 		shellEscape(spec.SoftwareStaging), shellEscape(spec.ResponseFilePath))
 	runRes, err := exec.Run(ctx, cmd)
 	if err != nil {
+		if ctx.Err() != nil {
+			res.Detected = DetectionStatePartial
+			return res, fmt.Errorf("runInstaller interrupted (ctx %v); remote process may still be running on %s; next run will see partial state: %w", ctx.Err(), spec.Target, err)
+		}
 		return nil, fmt.Errorf("runInstaller transport failure: %w", err)
 	}
 	res.ExitCode = runRes.ExitCode

@@ -33,7 +33,7 @@ func rootShWithExec(ctx context.Context, exec host.Executor, spec InstallSpec, r
 	}
 
 	touch := spec.OracleHome + "/install/rootsh.touchfile"
-	exists, _, err := probeFile(ctx, exec, touch)
+	exists, err := probeFile(ctx, exec, touch)
 	if err != nil {
 		return nil, fmt.Errorf("probe touchfile on %s: %w", spec.Target, err)
 	}
@@ -53,6 +53,13 @@ func rootShWithExec(ctx context.Context, exec host.Executor, spec InstallSpec, r
 	cmd := fmt.Sprintf("%s/root.sh && touch %s", shellEscape(spec.OracleHome), shellEscape(touch))
 	runRes, err := exec.Run(ctx, cmd)
 	if err != nil {
+		// If the local context was cancelled, the remote process may
+		// still be running on the target. Surface this as Partial so
+		// the next probe can pick it up; touchfile won't exist yet.
+		if ctx.Err() != nil {
+			res.Detected = DetectionStatePartial
+			return res, fmt.Errorf("root.sh interrupted (ctx %v); remote process may still be running on %s; next run will see partial state: %w", ctx.Err(), spec.Target, err)
+		}
 		return nil, fmt.Errorf("root.sh transport failure: %w", err)
 	}
 	res.ExitCode = runRes.ExitCode

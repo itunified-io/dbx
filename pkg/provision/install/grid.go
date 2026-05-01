@@ -60,6 +60,10 @@ func gridInstallWithExec(ctx context.Context, exec host.Executor, spec InstallSp
 		shellEscape(spec.OracleHome), shellEscape(spec.ResponseFilePath))
 	runRes, err := exec.Run(ctx, cmd)
 	if err != nil {
+		if ctx.Err() != nil {
+			res.Detected = DetectionStatePartial
+			return res, fmt.Errorf("runInstaller interrupted (ctx %v); remote process may still be running on %s; next run will see partial state: %w", ctx.Err(), spec.Target, err)
+		}
 		return nil, fmt.Errorf("runInstaller transport failure: %w", err)
 	}
 	res.ExitCode = runRes.ExitCode
@@ -76,7 +80,7 @@ func gridInstallWithExec(ctx context.Context, exec host.Executor, spec InstallSp
 //   one but not the other                                       → partial
 //   neither                                                     → absent
 func detectGridState(ctx context.Context, exec host.Executor, gridHome string) (DetectionState, error) {
-	hasOraInst, _, err := probeFile(ctx, exec, "/etc/oraInst.loc")
+	hasOraInst, err := probeFile(ctx, exec, "/etc/oraInst.loc")
 	if err != nil {
 		return DetectionStateAbsent, err
 	}

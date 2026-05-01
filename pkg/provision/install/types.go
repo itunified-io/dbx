@@ -1,9 +1,3 @@
-// Package install ships Oracle install primitives — runInstaller,
-// root.sh, asmca, netca, oracleasm/afd disk labeling — invoked by
-// /lab-up Phase D skills via dbxcli provision install <action>.
-//
-// All functions in this package require Enterprise license tier
-// (license.RequireTier checked at the cobra layer, not here).
 package install
 
 import (
@@ -29,13 +23,27 @@ type InstallSpec struct {
 	ResponseFilePath string `json:"response_file_path"`
 }
 
-// Validate returns an error if required fields are missing.
+// Validate returns an error if required fields are missing or contain
+// disallowed characters. \n and \r are rejected on every field as a
+// command-injection guard: shellEscape quoting alone does not stop
+// embedded newlines from being interpreted by some shell contexts.
 func (s InstallSpec) Validate() error {
 	if strings.TrimSpace(s.Target) == "" {
 		return fmt.Errorf("install: target is required")
 	}
 	if strings.TrimSpace(s.OracleHome) == "" {
 		return fmt.Errorf("install: oracle_home is required")
+	}
+	for _, f := range []struct{ name, value string }{
+		{"target", s.Target},
+		{"oracle_home", s.OracleHome},
+		{"oracle_base", s.OracleBase},
+		{"software_staging", s.SoftwareStaging},
+		{"response_file_path", s.ResponseFilePath},
+	} {
+		if strings.ContainsAny(f.value, "\n\r") {
+			return fmt.Errorf("install: field contains control character: %s", f.name)
+		}
 	}
 	return nil
 }
