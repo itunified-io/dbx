@@ -55,67 +55,6 @@ func ParseNamedParams(args []string) (map[string]string, error) {
 	return params, nil
 }
 
-// NewTargetCmd creates the "target" subcommand group.
-func NewTargetCmd() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "target",
-		Short: "Manage system targets",
-		Long: `Manage the target registry — databases, hosts, and services that dbx connects to.
-Targets are stored in ~/.dbx/targets/ as YAML files.`,
-	}
-	cmd.AddCommand(&cobra.Command{
-		Use:   "list",
-		Short: "List registered targets",
-		Long:  `List all registered targets with their type, host, and connection status.`,
-		Example: `  dbxcli target list
-  dbxcli target list entity_type=oracle_db`,
-		Args: cobra.ArbitraryArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			params, err := ParseNamedParams(args)
-			if err != nil {
-				return err
-			}
-			fmt.Printf("target list (filter: %v)\n", params)
-			return nil
-		},
-	})
-	cmd.AddCommand(&cobra.Command{
-		Use:   "add",
-		Short: "Register a new target",
-		Long:  `Register a new target (database, host, or service) in the target registry.`,
-		Example: `  dbxcli target add entity_name=prod-db entity_type=oracle_db host=db01.example.com port=1521 service=ORCL
-  dbxcli target add entity_name=web01 entity_type=oracle_host host=web01.example.com`,
-		Args: cobra.MinimumNArgs(2),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			params, err := ParseNamedParams(args)
-			if err != nil {
-				return err
-			}
-			if params["entity_name"] == "" || params["entity_type"] == "" {
-				return fmt.Errorf("entity_name and entity_type are required")
-			}
-			fmt.Printf("target add: %v\n", params)
-			return nil
-		},
-	})
-	cmd.AddCommand(&cobra.Command{
-		Use:   "test",
-		Short: "Test connectivity to a target",
-		Long:  `Test network and authentication connectivity to a registered target.`,
-		Example: `  dbxcli target test entity_name=prod-db`,
-		Args:    cobra.MinimumNArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			params, err := ParseNamedParams(args)
-			if err != nil {
-				return err
-			}
-			fmt.Printf("target test: %v\n", params)
-			return nil
-		},
-	})
-	return cmd
-}
-
 // NewServeCmd creates the "serve" subcommand for the REST API.
 func NewServeCmd() *cobra.Command {
 	var port int
