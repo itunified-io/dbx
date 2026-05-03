@@ -102,35 +102,8 @@ Supports stdio transport (default) and SSE transport for remote connections.`,
 }
 
 // NewLicenseCmd creates the "license" subcommand group.
+//
+// Real implementation lives in license.go (pkg/license-backed).
 func NewLicenseCmd() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "license",
-		Short: "Manage dbx license",
-		Long: `Manage the dbx license. Licenses are Ed25519-signed JWT tokens stored at ~/.dbx/license.jwt.
-Without a license, only OSS (Community) features are available.`,
-	}
-	cmd.AddCommand(&cobra.Command{
-		Use:     "status",
-		Short:   "Show license status",
-		Long:    `Show current license status including tier, entity count, expiry date, and grace period.`,
-		Example: `  dbxcli license status`,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			fmt.Println("license: OSS (no license file)")
-			return nil
-		},
-	})
-	activateCmd := &cobra.Command{
-		Use:     "activate",
-		Short:   "Activate a license file",
-		Long:    `Activate a license JWT file. The file is validated, copied to ~/.dbx/license.jwt, and EE features are unlocked.`,
-		Example: `  dbxcli license activate --file /path/to/license.jwt`,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			file, _ := cmd.Flags().GetString("file")
-			fmt.Printf("activating license from %s\n", file)
-			return nil
-		},
-	}
-	activateCmd.Flags().String("file", "", "path to license JWT file")
-	cmd.AddCommand(activateCmd)
-	return cmd
+	return newLicenseCmd()
 }
