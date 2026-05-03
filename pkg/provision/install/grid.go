@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/itunified-io/dbx/pkg/core/target"
 	"github.com/itunified-io/dbx/pkg/host"
 	"github.com/itunified-io/dbx/pkg/otel"
 )
@@ -65,7 +66,11 @@ func gridInstallWithExec(ctx context.Context, exec host.Executor, spec InstallSp
 		return nil, fmt.Errorf("ResponseFilePath required when state=absent (caller must render + scp the .rsp first)")
 	}
 
-	cmd := fmt.Sprintf("%s/runInstaller -silent -responseFile %s -ignorePrereqFailure",
+	// Oracle 19c Grid Infrastructure silent install entry-point is gridSetup.sh
+	// (NOT runInstaller — that is for DB Home only). The -waitforcompletion
+	// flag prevents runInstaller from forking + returning control before the
+	// install actually completes (otherwise our exit code is meaningless).
+	cmd := fmt.Sprintf("%s/gridSetup.sh -silent -responseFile %s -ignorePrereqFailure -waitforcompletion",
 		shellEscape(spec.OracleHome), shellEscape(spec.ResponseFilePath))
 	runRes, err := exec.Run(ctx, cmd)
 	if err != nil {
@@ -83,45 +88,84 @@ func gridInstallWithExec(ctx context.Context, exec host.Executor, spec InstallSp
 	return res, nil
 }
 
-// detectGridState probes for prior Grid install evidence per the
-// Oracle 19c canonical detection rule:
-//   /etc/oraInst.loc present  + $GRID_HOME/inventory non-empty → installed
-//   one but not the other                                       → partial
-//   neither                                                     → absent
+// detectGridState probes for prior Grid install evidence.
+//
+// The canonical signal for Oracle 19c is /etc/oraInst.loc: it is
+// created exclusively by orainstRoot.sh (run as root after the GUI
+// or silent install completes) and points at the central inventory
+// (oraInventory/ContentsXML/inventory.xml) where the registered
+// ORACLE_HOMEs are listed.
+//
+// We DO NOT probe $GRID_HOME/inventory because that directory ships
+// pre-populated inside the Grid Home zip (Components21/, Actions21/,
+// ContentsXML/, etc.) regardless of whether the install ever ran —
+// using it as a signal produces false-positive "partial" states on
+// every freshly extracted Grid Home, which then forces operators to
+// invoke an unimplemented --reset path. (Caught live on ext3adm1 +
+// ext4adm1, infra ext3+ext4 lab, 2026-05-03.)
+//
+// Future enhancement: parse inventory.xml from oraInst.loc and verify
+// the gridHome path is registered, distinguishing partial from full.
 func detectGridState(ctx context.Context, exec host.Executor, gridHome string) (DetectionState, error) {
+	_ = gridHome // reserved for future inventory.xml cross-check
 	hasOraInst, err := probeFile(ctx, exec, "/etc/oraInst.loc")
 	if err != nil {
 		return DetectionStateAbsent, err
 	}
-	hasInventory, err := probeDirNonEmpty(ctx, exec, gridHome+"/inventory")
-	if err != nil {
-		return DetectionStateAbsent, err
-	}
-	switch {
-	case hasOraInst && hasInventory:
+	if hasOraInst {
 		return DetectionStateInstalled, nil
-	case !hasOraInst && !hasInventory:
-		return DetectionStateAbsent, nil
-	default:
-		return DetectionStatePartial, nil
 	}
+	return DetectionStateAbsent, nil
 }
 
 // sshExecutor implements host.Executor using the local ssh binary.
-// Used by GridInstall (the non-test path).
+// Used by GridInstall (the non-test path) and the other install primitives
+// in this package.
+//
+// Resolves connection details from the dbx target registry
+// (~/.dbx/targets/<name>.yaml) — host, user, key_path. Falls back to
+// the bare target name for SSH config-driven setups.
 type sshExecutor struct {
-	target string
+	target  string
+	host    string
+	user    string
+	keyPath string
 }
 
-func newSSHExecutor(_ context.Context, target string) (host.Executor, error) {
-	if strings.TrimSpace(target) == "" {
+func newSSHExecutor(_ context.Context, name string) (host.Executor, error) {
+	if strings.TrimSpace(name) == "" {
 		return nil, fmt.Errorf("target must not be empty")
 	}
-	return &sshExecutor{target: target}, nil
+	e := &sshExecutor{target: name}
+	// Best-effort load from ~/.dbx/targets/<name>.yaml. If the load fails
+	// (target not registered yet, malformed YAML, etc.) fall back to ssh
+	// config defaults so existing flows keep working.
+	if t, err := target.Load(name); err == nil && t.SSH != nil {
+		e.host = t.SSH.Host
+		e.user = t.SSH.User
+		e.keyPath = t.SSH.KeyPath
+	}
+	return e, nil
 }
 
 func (e *sshExecutor) Run(ctx context.Context, command string) (*host.RunResult, error) {
-	cmd := exec.CommandContext(ctx, "ssh", e.target, command) //nolint:gosec
+	args := []string{
+		"-o", "StrictHostKeyChecking=accept-new",
+		"-o", "BatchMode=yes",
+	}
+	if e.keyPath != "" {
+		args = append(args, "-i", e.keyPath)
+	}
+	dest := e.target
+	if e.host != "" {
+		if e.user != "" {
+			dest = e.user + "@" + e.host
+		} else {
+			dest = e.host
+		}
+	}
+	args = append(args, dest, command)
+	cmd := exec.CommandContext(ctx, "ssh", args...) //nolint:gosec
 	var stdout, stderr strings.Builder
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
