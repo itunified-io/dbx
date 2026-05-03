@@ -231,10 +231,14 @@ func newDBSchemaCmd() *cobra.Command {
 func newDBSQLCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "sql",
-		Short: "Read-only SQL execution",
-		Long: `Execute read-only SQL statements against an Oracle database.
-Only SELECT statements are permitted — DML/DDL is blocked by the ReadOnlyGuard.`,
+		Short: "SQL execution (read-only by default; exec-readwrite for privileged DDL/DML)",
+		Long: `Execute SQL statements against an Oracle database.
+The default exec subcommand is gated by ReadOnlyGuard (SELECT/WITH/EXPLAIN only).
+The exec-readwrite subcommand removes that guard for privileged Phase E.1/E.2
+operations (FORCE LOGGING, FLASHBACK ON, ADD STANDBY LOGFILE) and is gated by
+the Enterprise tier + provision bundle license.`,
 	}
+	cmd.AddCommand(newDBSQLExecReadWriteCmd())
 	cmd.AddCommand(&cobra.Command{
 		Use:   "exec",
 		Short: "Execute a read-only SELECT statement",
