@@ -2,6 +2,43 @@
 
 All notable changes to this project will be documented in this file.
 
+## v2026.05.03.1 — 2026-05-03
+
+### feat(license): pkg/license/ + RequireBundle gating on 8 provision install primitives (#27)
+
+Slim Ed25519-JWT tier-gate facade for the dbxcli, plus enforcement
+on every Oracle install primitive. Closes the TODO(#519) markers
+introduced in PR #28.
+
+- New package `pkg/license/`:
+  - `types.go` — `Tier` ordering (community < business < enterprise),
+    `License` with `HasBundle/HasTier/IsValid`, `ErrTierGate` sentinel
+    that wraps the underlying `ErrMissing`/`ErrExpired`/...
+  - `jwt.go` — minimal compact JWS (Ed25519/EdDSA only). Strict
+    algorithm pinning rejects `none`, `HS256`, etc.
+  - `store.go` — license at `~/.dbx/license.jwt` (mode 0600). Embedded
+    production verification key at `pkg/license/keys/prod.pub` (empty
+    placeholder until license CA is provisioned). Dev keys auto-trusted
+    via `~/.dbx/.trust/*.pub`.
+  - `issuer.go` — DEV-MODE: `IssueDev` self-signs with
+    `~/.dbx/.signing-key.ed25519`, idempotent across calls. Stamps the
+    `dev: true` claim so the verifier prints a warning on Load.
+  - `require.go` — `RequireBundle(name)` and `RequireTier(min)`. Bundle
+    gates implicitly require Enterprise tier.
+- Wired `license.RequireBundle("provision")` at the top of every
+  `dbxcli provision install <leaf>` RunE: grid, dbhome, root-sh, asmca,
+  netca, asm-label, dbca, pdb. Replaces the placeholder
+  `// TODO(#519): wire license.RequireBundle…` markers.
+- New `cmd/dbxcli/root/license.go`:
+  - `dbxcli license status` — table view of tier/bundles/expiry/source.
+  - `dbxcli license activate <path>` — verifies + installs a JWT.
+  - `dbxcli license issue …` — DEV-MODE self-sign with `--tier`,
+    `--bundles`, `--subject`, `--expires`, `--out`.
+- 22 new tests (sign/verify roundtrip, alg pinning, unknown-signer
+  rejection, expired/wrong-tier/wrong-bundle gates, dev key idempotency,
+  file mode 0600). Existing e2e test updated to accept the new
+  tier-gate error path.
+
 ## v2026.05.02.1 — 2026-05-02
 
 ### feat(target): real YAML persistence at ~/.dbx/targets/<name>.yaml (#30)
