@@ -70,8 +70,20 @@ func gridInstallWithExec(ctx context.Context, exec host.Executor, spec InstallSp
 	// (NOT runInstaller — that is for DB Home only). The -waitforcompletion
 	// flag prevents runInstaller from forking + returning control before the
 	// install actually completes (otherwise our exit code is meaningless).
-	cmd := fmt.Sprintf("%s/gridSetup.sh -silent -responseFile %s -ignorePrereqFailure -waitforcompletion",
-		shellEscape(spec.OracleHome), shellEscape(spec.ResponseFilePath))
+	//
+	// Two contextual wrappers are required:
+	//   - The Grid Home is mode 0750 grid:oinstall, so gridSetup.sh MUST run
+	//     as the `grid` OS user. dbx ssh logs in as root (per target.yaml),
+	//     so we shell out via `sudo -u grid bash -c '...'`.
+	//   - Oracle 19.3.0 base does not list OL9.x in its supported-OS table,
+	//     causing INS-08101 supportedOSCheck NPE. Standard remediation is
+	//     to set CV_ASSUME_DISTID to a known-good value (OEL8 covers OL9
+	//     prereq parity for cluvfy + the OS check).
+	cmd := fmt.Sprintf(
+		"sudo -u grid -H bash -c %s",
+		shellQuote(fmt.Sprintf(
+			"export CV_ASSUME_DISTID=OEL8 && cd /tmp && %s/gridSetup.sh -silent -responseFile %s -ignorePrereqFailure -waitforcompletion",
+			shellEscape(spec.OracleHome), shellEscape(spec.ResponseFilePath))))
 	runRes, err := exec.Run(ctx, cmd)
 	if err != nil {
 		if ctx.Err() != nil {
