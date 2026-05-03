@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/itunified-io/dbx/pkg/license"
 	"github.com/itunified-io/dbx/pkg/provision/install"
 	"github.com/spf13/cobra"
 )
@@ -27,11 +28,9 @@ func resolveTarget(cmd *cobra.Command, localTarget string) (string, error) {
 // NewInstallCmd returns the `provision install` parent subcommand.
 // Each leaf delegates to a function in dbx/pkg/provision/install/.
 //
-// License gate: provision domain maps to BundleOps
-// (pkg/core/license.DomainToBundle["provision"]). A RequireTier/RequireBundle
-// helper does not yet exist in pkg/core/license — tracked in #519.
-// When that helper ships, add:  license.RequireBundle(license.BundleOps)
-// at the top of each RunE.
+// License gate: every leaf below calls license.RequireBundle("provision")
+// at the top of its RunE. Bundle gates implicitly require Enterprise tier
+// (see pkg/license/require.go). #27 / ADR-0094.
 func NewInstallCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "install",
@@ -89,7 +88,10 @@ reverter follow-up plan.`,
     --admin-password-file /tmp/pdbadmin.pw \
     --datafile-dest +DATA`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// TODO(#519): wire license.RequireBundle("provision") once helper ships
+			// Tier-gate: provision bundle (Enterprise tier) — see pkg/license + ADR-0094.
+			if err := license.RequireBundle("provision"); err != nil {
+				return fmt.Errorf("dbxcli provision: %w", err)
+			}
 			t, err := resolveTarget(cmd, spec.Target)
 			if err != nil {
 				return err
@@ -156,7 +158,10 @@ step is deferred to a reverter follow-up plan.`,
     --response-file /tmp/dbca.rsp \
     --db-unique-name ORCL`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// TODO(#519): wire license.RequireBundle("provision") once helper ships
+			// Tier-gate: provision bundle (Enterprise tier) — see pkg/license + ADR-0094.
+			if err := license.RequireBundle("provision"); err != nil {
+				return fmt.Errorf("dbxcli provision: %w", err)
+			}
 			t, err := resolveTarget(cmd, spec.Target)
 			if err != nil {
 				return err
@@ -219,7 +224,10 @@ label-removal step is deferred to a reverter follow-up plan.`,
     --impl asmlib \
     --labels DATA1:/dev/sdb,DATA2:/dev/sdc`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// TODO(#519): wire license.RequireBundle("provision") once helper ships
+			// Tier-gate: provision bundle (Enterprise tier) — see pkg/license + ADR-0094.
+			if err := license.RequireBundle("provision"); err != nil {
+				return fmt.Errorf("dbxcli provision: %w", err)
+			}
 			t, err := resolveTarget(cmd, spec.Target)
 			if err != nil {
 				return err
@@ -296,7 +304,10 @@ deferred to a reverter follow-up plan.`,
     --response-file /tmp/netca.rsp \
     --listener-name LISTENER --port 1521`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// TODO(#519): wire license.RequireBundle("provision") once helper ships
+			// Tier-gate: provision bundle (Enterprise tier) — see pkg/license + ADR-0094.
+			if err := license.RequireBundle("provision"); err != nil {
+				return fmt.Errorf("dbxcli provision: %w", err)
+			}
 			t, err := resolveTarget(cmd, spec.Target)
 			if err != nil {
 				return err
@@ -354,7 +365,10 @@ deferred to a reverter follow-up plan.`,
     --dg-name DATA --disks /dev/sdb,/dev/sdc \
     --redundancy EXTERNAL --au-size-mb 4`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// TODO(#519): wire license.RequireBundle("provision") once helper ships
+			// Tier-gate: provision bundle (Enterprise tier) — see pkg/license + ADR-0094.
+			if err := license.RequireBundle("provision"); err != nil {
+				return fmt.Errorf("dbxcli provision: %w", err)
+			}
 			t, err := resolveTarget(cmd, spec.Target)
 			if err != nil {
 				return err
@@ -400,7 +414,10 @@ func newInstallDbhomeCmd() *cobra.Command {
 		Use:   "dbhome",
 		Short: "Run runInstaller -silent for Oracle DB Home 19c",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// TODO(#519): wire license.RequireBundle("provision") once helper ships
+			// Tier-gate: provision bundle (Enterprise tier) — see pkg/license + ADR-0094.
+			if err := license.RequireBundle("provision"); err != nil {
+				return fmt.Errorf("dbxcli provision: %w", err)
+			}
 			t, err := resolveTarget(cmd, spec.Target)
 			if err != nil {
 				return err
@@ -438,7 +455,10 @@ func newInstallRootshCmd() *cobra.Command {
 		Use:   "root-sh",
 		Short: "Run <OracleHome>/root.sh idempotently after a runInstaller",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// TODO(#519): wire license.RequireBundle("provision") once helper ships
+			// Tier-gate: provision bundle (Enterprise tier) — see pkg/license + ADR-0094.
+			if err := license.RequireBundle("provision"); err != nil {
+				return fmt.Errorf("dbxcli provision: %w", err)
+			}
 			t, err := resolveTarget(cmd, spec.Target)
 			if err != nil {
 				return err
@@ -486,6 +506,10 @@ Idempotency:
     --oracle-base /u01/app/grid \
     --response-file /tmp/grid.rsp`,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			// Tier-gate: provision bundle (Enterprise tier) — see pkg/license + ADR-0094.
+			if err := license.RequireBundle("provision"); err != nil {
+				return fmt.Errorf("dbxcli provision: %w", err)
+			}
 			t, err := resolveTarget(cmd, spec.Target)
 			if err != nil {
 				return err

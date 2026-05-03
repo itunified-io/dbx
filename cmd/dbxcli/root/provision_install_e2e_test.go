@@ -102,9 +102,14 @@ func TestProvisionInstall_TargetResolution(t *testing.T) {
 	err := cmd.Execute()
 	require.Error(t, err)
 	combined := strings.ToLower(err.Error() + " " + out.String())
-	// Either the resolveTarget error, or the SSH attempt error if a
-	// stray default --target slipped in (defensive).
+	// One of:
+	//   - tier gate: provision bundle requires Enterprise tier
+	//     (no license configured in test env — this is the post-#27 norm)
+	//   - resolveTarget error
+	//   - SSH attempt error if a stray default --target slipped in
 	assert.True(t,
-		strings.Contains(combined, "target") || strings.Contains(combined, "ssh"),
-		"expected target-related error, got: %s", combined)
+		strings.Contains(combined, "tier gate") ||
+			strings.Contains(combined, "target") ||
+			strings.Contains(combined, "ssh"),
+		"expected tier-gate / target / ssh error, got: %s", combined)
 }
