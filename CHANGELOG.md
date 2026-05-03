@@ -2,6 +2,49 @@
 
 All notable changes to this project will be documented in this file.
 
+## v2026.05.03.2 — 2026-05-03
+
+### feat(oracle/sql): db sql exec-readwrite (#29) — privileged DDL/DML/PL-SQL via sqlplus / as sysdba
+
+New cobra leaf `dbxcli db sql exec-readwrite` + new package
+`pkg/oracle/sql/` for SSH-wrapped sqlplus execution. Required for
+/lab-up Phase E.1 (FORCE LOGGING, FLASHBACK ON, ADD STANDBY LOGFILE)
+and Phase E.2 (RECOVER MANAGED STANDBY DATABASE) — until now those
+steps fell back to ad-hoc `ssh oracle@host 'sqlplus / as sysdba <<EOF'`
+which broke the audit chain + OTEL story.
+
+- New package `pkg/oracle/sql/`:
+  - `exec_readwrite.go` — `ExecReadWrite(ctx, target, sql, opts)`
+    shells out via `host.Executor` (SSH) to
+    `sudo -u oracle bash -lc 'env ORACLE_SID=... ORACLE_HOME=... sqlplus -s / as sysdba <<HEREDOC ... HEREDOC'`.
+    No read-only guard; accepts DDL/DML/anonymous PL/SQL. Returns
+    `ExecResult{Statements, Stdout, Stderr, ExitCode, LogTail}`.
+  - `sshexec.go` — package-private SSH executor mirroring
+    `pkg/provision/install` (kept separate so executor evolution in
+    each domain stays independent).
+  - `exec_readwrite_test.go` — table-driven with `hosttest.MockExecutor`:
+    happy path, exit-code propagation, ctx-cancel + `ErrCancelled`,
+    empty SQL rejection, multi-statement audit splitting, heredoc-
+    terminator injection guard (rejects reserved token AND bare `EOF`
+    line), required-opts validation, log-tail bounding.
+- New cobra leaf `dbxcli db sql exec-readwrite`
+  (`cmd/dbxcli/root/db_sql.go`):
+  - Flags: `--target`, `--sql | --sql-file`, `--oracle-sid`,
+    `--oracle-home`, `--format json|table`, `--log-tail N`.
+  - License gate: `license.RequireBundle("provision")` (Enterprise
+    tier — same gate as install primitives, since FORCE LOGGING etc.
+    are admin ops). Same pattern as `provision install` leaves.
+  - Default output is human-readable (exit_code + stdout/stderr
+    sections); `--format json` returns the structured `ExecResult`.
+- **Deviation note**: The original task brief proposed adding
+  `OracleSID` + `OracleHome` to `pkg/core/target.Target`. Deferred:
+  the unified Target struct does not yet model per-database SID/Home
+  pairs, and threading them through `ExecOptions` (caller-provided
+  from the env.yaml) keeps this PR scoped. Target-struct extension
+  can land as a follow-up when other commands also need SID/Home.
+
+Closes #29.
+
 ## v2026.05.03.1 — 2026-05-03
 
 ### feat(license): pkg/license/ + RequireBundle gating on 8 provision install primitives (#27)
