@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file.
 
+## v2026.05.02.1 — 2026-05-02
+
+### feat(target): real YAML persistence at ~/.dbx/targets/<name>.yaml (#30)
+
+`dbxcli target` is no longer a stub. Targets are persisted to disk and
+the four lifecycle commands work end-to-end.
+
+- `target add` — persists Target to `~/.dbx/targets/<entity_name>.yaml`
+  (mode 0600, parent dir 0700). Previously a stub that printed params.
+- `target list` — reads the store, optional `entity_type=<x>` filter,
+  honours `--format table|json|yaml`.
+- `target test` — loads target, runs `whoami` over SSH using existing
+  `SSHConfig` (`-i <key_path>`, `BatchMode=yes`, 5s connect timeout).
+- `target remove <name>` (new, also `rm`/`delete`) — idempotent file
+  delete; accepts positional name or `entity_name=<name>`.
+
+New `pkg/core/target/store.go`:
+- `StoreDir()` resolves `~/.dbx/targets`
+- `Save/Load/List/Remove` with `target store: …` error prefix
+- Filesystem-safe name validation (regex
+  `^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$`) — rejects `../etc/passwd`,
+  `foo/bar`, `foo bar`, empty, `.`, `..`, NUL byte
+- 8 table-driven tests in `pkg/core/target/store_test.go`
+
+Unblocks /lab-up Phase B.5 target registration shipped in
+itunified-io/infrastructure PR #528.
+
 ## v2026.05.01.1 — 2026-05-01
 
 ### feat(provision): pkg/provision/install — 8 Oracle install primitives (#22)
