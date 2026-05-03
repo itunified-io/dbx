@@ -83,3 +83,11 @@ func shellEscape(s string) string {
 	}
 	return "'" + strings.ReplaceAll(s, "'", `'\''`) + "'"
 }
+
+// shellQuote unconditionally wraps a string in single quotes and escapes
+// embedded single quotes. Used for the inner command of `bash -c '...'`
+// where we always want the surrounding quotes regardless of content
+// (vs shellEscape which omits quotes for safe-character-only strings).
+func shellQuote(s string) string {
+	return "'" + strings.ReplaceAll(s, "'", `'\''`) + "'"
+}

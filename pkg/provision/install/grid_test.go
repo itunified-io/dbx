@@ -38,7 +38,7 @@ func TestGridInstall(t *testing.T) {
 				m.OnCommand("test -f /etc/oraInst.loc").Returns(1, "", "")
 				m.OnCommand("test -d /u01/app/19c/grid/inventory && ls -A /u01/app/19c/grid/inventory | head -1").
 					Returns(1, "", "")
-				m.OnCommandPattern(`/u01/app/19c/grid/runInstaller -silent -responseFile /tmp/grid\.rsp.*`).
+				m.OnCommandPattern(`/u01/app/19c/grid/gridSetup\.sh -silent -responseFile /tmp/grid\.rsp.*`).
 					Returns(0, "Installation Successful.\n", "")
 			},
 			spec: InstallSpec{
@@ -55,17 +55,12 @@ func TestGridInstall(t *testing.T) {
 			spec:      InstallSpec{},
 			wantErr:   "target is required",
 		},
-		{
-			name: "PartialState_AbortsWithoutReset",
-			setupMock: func(m *hosttest.MockExecutor) {
-				m.OnCommand("test -f /etc/oraInst.loc").
-					Returns(0, "inventory_loc=/u01/app/oraInventory\n", "")
-				m.OnCommand("test -d /u01/app/19c/grid/inventory && ls -A /u01/app/19c/grid/inventory | head -1").
-					Returns(1, "", "")
-			},
-			spec:    InstallSpec{Target: "ext3adm1", OracleHome: "/u01/app/19c/grid"},
-			wantErr: "partial install detected",
-		},
+		// Note: "PartialState" detection used to fire when /etc/oraInst.loc
+		// was present but $GRID_HOME/inventory was empty. Removed in the
+		// 2026-05-03 detector simplification: $GRID_HOME/inventory ships
+		// pre-populated in the Grid Home zip and is not a reliable signal.
+		// Detection is now oraInst.loc-only. Future enhancement: parse
+		// inventory.xml from oraInst.loc to distinguish partial from full.
 	}
 
 	for _, tc := range cases {
