@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## v2026.06.29.1 — 2026-06-29
+
+### fix(provision/au-image): restore missing pkg/provision/au_image (build was broken on main)
+
+`cmd/dbxcli/root/provision_au_image.go` (#40) imports `pkg/provision/au_image`,
+but that package never landed on `main` — a partial merge left the command
+orphaned, so `make build` failed: `no required module provides package
+.../pkg/provision/au_image`. Restored the package (parser, types, inventory +
+testdata) from commit `f824d8d`. `dbxcli`/`dbxctl` build again; `provision` and
+`au_image` test suites pass. Unblocks the full `dbxcli provision install` chain
+(grid/dbhome/root-sh/asmca/netca/asm-label/dbca/pdb) needed to provision the
+clext6 Oracle 19c RAC test stack.
+
 ## v2026.05.03.2 — 2026-05-03
 
 ### feat(oracle/sql): db sql exec-readwrite (#29) — privileged DDL/DML/PL-SQL via sqlplus / as sysdba

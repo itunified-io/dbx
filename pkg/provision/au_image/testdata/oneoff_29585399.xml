@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<oneoff_inventory>
+    <opack_version version="14.1.0.1.9"/>
+    <patch_description>OCW RELEASE UPDATE 19.3.0.0.0 (29585399)</patch_description>
+    <patch_id number="29585399"/>
+    <minimum_opatch_version>12.2.0.1.5</minimum_opatch_version>
+    <unique_patch_id>22840393</unique_patch_id>
+    <cannot_autorollback>false</cannot_autorollback>
+    <date_of_patch day="9" month="Apr" time="19:12:47 hrs" year="2019" zone="PST8PDT"/>
+    <base_bugs>
+        <bug description="RHPS START FAILS IF RHPC CONNECTION FAILS" number="27222128"/>
+        <bug description="LONG PDB OPEN TIMES WHEN DATA GUARD ROLE TRANSITION OCCURS" number="27572040"/>
+        <bug description="WS2012_181_UD(11204-&amp;gt;181)  AFTER RESTORE,RELOCATE RACONE DB FAILED,ORA-01078" number="27604329"/>
+        <bug description="QOSCTL RETURNS INVALID SYNTAX FOR HISTORICAL DATA OUTPUT" number="27760043"/>
+        <bug description="CRS 12.2 DOESN'T BRING ACFS RESOURCES UP AFTER INTERCONNECT INTERRUPTION" number="27877830"/>
+        <bug description="LNX-191-UD DOWNGRADE HISTORY ATTRIBUTE AND VALUE DIDN'T MATCH" number="28302580"/>
+        <bug description="LNX-191-GH PATCHING 12201 GI FROM SOURCEHOME TO DESTWC FAILED WITH PRGO-1472" number="28470673"/>
+        <bug description="LNX-191-GI  CRSCTL START CLUSTERWARE -ALL REPORTS CRS-4690" number="28621543"/>
+        <bug description="SRVCTL MODIFY DATABASE  -DISKGROUP &amp;lt;DISKGROUPLIST&amp;gt; LEADS TO JVM CRASH" number="28642469"/>
+        <bug description="LNX-191-ZIP NODE REBOOT WHEN RUN 'ROOT -TRANSPARENT' WITH ASM_NETWORK NOT FOUND IF DB HOME ON ACFS" number="28699321"/>
+        <bug description="LNX-191-CONV  ORAROOTAGENT COREDUMP DURING RUNNING ROOT.SH ON THE 1ST NODE" number="28710663"/>
+        <bug description="FLEX  CRSD COREDUMP AT CLS_PE3  PLACEMENTINSTRUCTION  GETRESOURCEINSTANCE" number="28755846"/>
+        <bug description="W2012_191_CRS AGENT ABORT WHEN CHECKING SCAN VIP" number="28772816"/>
+        <bug description="LNX-191-SECURITY  PROBLEMATIC WORLD-WRITABLE FILES DIRS OF RAC ENV  CRSDATA AND CVU DIR" number="28785321"/>
+        <bug description="LNX-191-ASM  NONE ANY ASM PROCESSES WAS RUNNING, BUT ASM WAS STILL REPORTED AS RUNNING" number="28800508"/>
+        <bug description="Fix for Bug 28808652" number="28808652"/>
+        <bug description="LNX-192-MSG  THE SYNTAX OF 3 NEW COMMANDS IS IN-ACCURATE  OPTIONAL '[...]' SHOULD BE CHANGED TO MANDATORY '{...}'" number="28815557"/>
+        <bug description="LNX-191_RF  UNABLE TO START READER FARM DATABASE" number="28847541"/>
+        <bug description="LNX-192-CRSCTL  UNMATCHED LEFT BRACKET '{' IN THE SYNTAX OF 'CRSCTL RESTART CLUSTER -HELP'" number="28847572"/>
+        <bug description="LNX-19C-UD 11204 UPGRADE FAILED AT SECOND NODE DUE TO FAIL TO SHUTDOWN DATABASE" number="28870496"/>
+        <bug description="LNX-192-GH SHOULDN'T CHANGE OH ATTRIBUTE IF RWOH-ROOH DB PATCHING IS FORBIDDEN" number="28871040"/>
+        <bug description="ORAIPSECSETUP NEES EXECUTE PERMISSION" number="28874416"/>
+        <bug description="AIX-184-GH  RERUN PROV A RAC DB HOME TO 11204 CLUSTER SHOULD NOT EXE DETACHHOME" number="28877252"/>
+        <bug description="LNX-191-GH 121 TO 122 TLS ZDU FAIL W  PRGO-2350 EVEN THOUGH PASSWD FILE EXISTS ON ASM DG" number="28881191"/>
+        <bug description="LNX-191_RF  UNABLE TO START READER FARM SERVICE BY 'SRVCTL START SERVICE -DB MYCDB'" number="28881848"/>
+        <bug description="LNX-19.1-ROOH FAILED TO START LISTENER ON ROOH" number="28888083"/>
+        <bug description="LNX-191-GH ACTIVE DUPLICATE 12102 SNAP DB FOR ZDU FAIL W  RMAN-05100 DUE TO WRONG RMAN CONNECT STRING" number="28911140"/>
+        <bug description="RHP  RHP_SOURCEPATH=NULL FOR STANDALONE DB UPGRADE" number="28925250"/>
+        <bug description="FLEX  GNS IS UP, STUCK AT INTERMEDIATE, CHECK SAYS CHECKTYPE   3 SETTING STATUS TO 'PARTIAL'" number="28925460"/>
+        <bug description="LNX-192-CRS  RE-RUN 'CRSCTL STOP CLUSTER -N REMOTE_CRS_NODE' WOULD JUST HANG FOREVER" number="28935956"/>
+        <bug description="LNX-192-CRS  LOCAL CRSD.BIN PROCESS COREDUMP" number="28940472"/>
+        <bug description="RESOURCEINSTANCE  GETVALUES4AGFW AFTER 'CRSCTL START CLUSTER -N REMOTE_CRS_NODES'" number="3"/>
+        <bug description="RHPCTL MOVE DATABASE WITH -PDBPARALLEL OPTION SHOULD NOT CLOSE ALL THE PDBS INSTANCE WHILE APPLYING SQL PATCH" number="28942694"/>
+        <bug description="RAC  AC  SRVCTL CREATE AC SERVICE WITH FAILOVER TYPE 'AUTO' AND USER DEFINED SESSION STATE" number="28951332"/>
+        <bug description="WS2012_192_UD(11204-&amp;gt;192) 'SRVCTL UPGRADE MODEL' FAILED ON LAST NODE IN NON-ROLLING UPGRADE" number="28963036"/>
+        <bug description="PL19.2PORTSPECEFIC HAS AIX GIPC ERRORS IN MULTINODE LRGS WHEN OH IS OVER NFS" number="28968779"/>
+        <bug description="CLSRSC-180  AN ERROR OCCURRED WHILE EXECUTING THE COMMAND ' ADE AIME1_ADC00VNM19 ORACLE BIN CHACTL QUERY MODEL'" number="28980448"/>
+        <bug description="LNX-191-GH START RHPSERVER REPORT ERRORS NOT CLEAR IN LOCAL MODE" number="28995287"/>
+        <bug description="LNX-185-RHP UPGRADE 122 RHPC TO 185 FAILED TO UPDATE INVENTORY,PRGH-1026" number="29003207"/>
+        <bug description="LNX-191-ZIP  RHPCTL SHOULD BLOCK TGIP IF DEST AND SOURCE GI HOMES ARE WITH SAME PATCH LEVEL" number="29003617"/>
+        <bug description="LNX-192-UD ROOTUPGRADE.SH RERUN HIT PRCR-1086 ERR ORA.RHPSERVER ALREADY REGISTERED" number="29016294"/>
+        <bug description="ADD FUNCTIONALITY TO START STOP THE JMX SERVER" number="29018680"/>
+        <bug description="CRSD TERMINATES ABNORMALLY, AGENT TO RESTART CRSD" number="29024876"/>
+        <bug description="DERBY.JAR NOT FOUND UNDER OHOME JDK" number="29026154"/>
+        <bug description="LNX-192-GH PROV ACTIVE 19.2 GI ON SPARC NODES HIT PRCF-2035 COPY OPERATION FAILED" number="29027933"/>
+        <bug description="PROVIDE JAVA WRAPPER API FOR CLSUISRDSMODAVAILABLE()" number="29047127"/>
+        <bug description="19.2 18.3-&amp;gt;19.2 UPGRADE   CHACTL CONFIG' DIED AT ORACHM.PM LINE 1112." number="29052850"/>
+        <bug description="LSNRAGENT ISSUING MULTIPLE SERVICE_UPDATE" number="29058476"/>
+        <bug description="LNX-191-GH -TDEKEYSTOREPASSWD AND -TDEMASTERKEY DO NOT WORK" number="29111631"/>
+        <bug description="LNX-191-ZIP WATCHDOG PROCESS RUN FROM CRS HOME INSTEAD OF GI BASE" number="29112455"/>
+        <bug description="LNX-192-GIMR  MGMTCA CREATEGIMRCONTAINER FAILED TO FETCH MGMTDB DATAFILE LOCATION WHEN ASSIGNED DISKGROUP" number="29117337"/>
+        <bug description="LNX-192-CONV  HIT 'CRS-1078  MESSAGE 1078 NOT FOUND' IN CRSD AGENT LOG WHEN UPGRADING 183 DB TO 192" number="29123444"/>
+        <bug description="LNX-192-GH HIT AN INTERNAL ERROR WHEN ADD RHPCLIENT W  -TARGETNODE -ROOT OPTION" number="29125708"/>
+        <bug description="LNX-191-ZIP  HIGH CPU USAGE OF ORACSSWD PROCESS" number="29125786"/>
+        <bug description="ASMCMDUTIL.GETCLIENTCLUSTERINFO() THROWS EXCEPTION CMDTOOLUTILEXCEPTION WHILE PARSING LIST OF CLUSTERS." number="29129476"/>
+        <bug description="THE NEW 18.3 GRID INSTALL SELECT AN HAIP USED BY AN EXISTING 11.2 CLUSTER" number="29131772"/>
+        <bug description="LNX-191-ZIP HIT FAILED TO ENABLE CRS ERROR WHEN RUN ROOTCRS.SH -UPDATEOSFILES" number="29132456"/>
+        <bug description="RHP  REGISTER WORKINGCOPY INVOKERHPC CALL FOR 121 TARGET WC AND IS FAILING" number="29139727"/>
+        <bug description="REPEATED ORA-01002 LOGGED IN CRSD_ORAAGENT_ORACLE.TRC" number="29146157"/>
+        <bug description="LNX-192-GH AFTER UPGRADE GI FROM 11204 TO 192, ADD DATABASE TO 11204 DB HOME FAILED W  PRGO-1480" number="29147849"/>
+        <bug description="LNX-191-CHM  CHM FAILED TO CONNECT GIMR AFTER RECREATE MGMTDB" number="29149170"/>
+        <bug description="LNX-192-ASM  SRVCTL CANN'T GET CLIENTS CONNECTED TO 19.2 ASM IF WITH 11204 DB INSTANCES" number="29152603"/>
+        <bug description="WS2012_192  INCORRECT LOGIC IN CHECK_SUPERUSER AND S_CHECK_SUPERUSER" number="29152752"/>
+        <bug description="LNX-192-GH UPGRADE GI FROM FAILED W  BATCHES WHEN ESTABLISH SSH CONNECTION DUE TO EXTRA SPACE IN NODENAME" number="29154631"/>
+        <bug description="LNX-20C-UD AFTER UPG FROM 19,NO DATA FOUND FOR OCLUMON DUMPNODEVIEW" number="29154636"/>
+        <bug description="LNX-192-CVU  HIT ARRAYINDEXOUTOFBOUNDSEXCEPTION ERRORS IN ORA.CVU'S PERIODIC CHECKING TRACE LOGS" number="29154829"/>
+        <bug description="WS2012_192_ASMRG 'SRVCTL CONFIG ASMNETWORK' HIT PRKZ-1085 WITH IPV6 ADDRESS IF NETMASK IS EMPTY" number="29159216"/>
+        <bug description="LNX-192-GH RERUN DELETE ACTIVE GI WC ONLY DELETE METADATA ON RHPS" number="29159661"/>
+        <bug description="WS2012_192_ASMRG SRVCTL SHOULD GIVE CLEAR ERROR MESSAGE IF START ASMNETWORK FAIL" number="29160462"/>
+        <bug description="ROOTUPGRADE FAILED WITH 'CRS-8503 [MEMCHR()+27] [SIGNAL EXCEPTION  11] [INSTRUCTION ADDR  0X7F9B8B27A41B] [MEMORY ADDR  (NIL)]'" number="29161923"/>
+        <bug description="SECURITY ISSUE   SIHA SETUP. ROOT SCRIPT CALLS NON-ROOT SCRIPT" number="29169540"/>
+        <bug description="LNX64-19.3-CRS  HIT CRS-8503 [CRFJSON_FORMAT_SUMMARY()+1552] [SIGNAL EXCEPTION  11]" number="29169739"/>
+        <bug description="INITIALIZATION OF VARIABLES FAILS WITH DUPLICATED ENTRY IN FILE VARIABLES.XML ERROR" number="29170717"/>
+        <bug description="HAIP IS DISABLED AFTER AN ADDNODE OPERATION EVEN WITH THE FIX 26791882" number="29173618"/>
+        <bug description="UPGRADE GI HOME PRE-CHECKS FAILED WITH PRGO-1069   INTERNAL ERROR" number="29181568"/>
+        <bug description="LNX-192-GH RHPCTL COLLECT OSCONFIG HIT PRCT-1014 INTERNAL ERR COPYCLIENTIMPL" number="29182920"/>
+        <bug description="UNABLE TO START RHPCLIENT WITH 18.4" number="29183298"/>
+        <bug description="FLEX  ORAAGENT COREDUMP AT SGIPCWWAITHELPER" number="29186091"/>
+        <bug description="LNX-192-GH ADD DATABASE TO 12102 SUCCEED W  WARNINGS BUT REPORT FAILED AND OUTPUT TWICE" number="29191827"/>
+        <bug description="LNX-191-GH ADD CHECK TO VALIDATE SOURCE AND TARGET NODE HAVE SAME TIME" number="29201143"/>
+        <bug description="ACFS RESOURCE FAILED TO START" number="29201695"/>
+        <bug description="MULTICAST CHECK FAILS WITH NPE IF EXECTASK RETURNS EMPTY OUTPUT" number="29209545"/>
+        <bug description="Fix for Bug 29210577" number="29210577"/>
+        <bug description="Fix for Bug 29210610" number="29210610"/>
+        <bug description="Fix for Bug 29210624" number="29210624"/>
+        <bug description="Fix for Bug 29210683" number="29210683"/>
+        <bug description="Fix for Bug 29213641" number="29213641"/>
+        <bug description="LNX-192-GH PATCHING 192 SIDB ON 192 SIHA FAILED WHEN TRY TO OPERATE RHPCLIENT WHICH IS NOT EXISTED" number="29219627"/>
+        <bug description="LNX-193-ASM NO ERROR MESSAGE REPORT WHEN SRVCTL START ASMNETWORK -NETNUM FOLLOW WITH INCORRECT NETNUM" number="29224294"/>
+        <bug description="LNX-193-UD  INCORRECT ACTION DETAILS OF PRVG-4574 TO PUT ASM PW FILE ON AN ASM DG" number="29225861"/>
+        <bug description="ACFS FILESYSTEM MOUNTING PERMISSIONS OWNER GROUP ARE LOST AFTER RESTART" number="29229839"/>
+        <bug description="FIX CV_DESTLOC IN RHP_INSTALL" number="29235934"/>
+        <bug description="SOLSP64-193-CVU CVU REPORTS WARNING PRVG-5821 WHEN PRE-CHECK GNS" number="29242906"/>
+        <bug description="CANNOT MODIFY ONS WALLET THROUGH 'SRVCTL MODIFY NODEAPPS -CLIENTDATA' ON WINDOWS CLUSTER" number="29243749"/>
+        <bug description="RHPS  RETRY ATTEMPT OF A FAILED RHP MOVE UPGRADE NONE OF THE POST  UA GETS EXECUTED" number="29244495"/>
+        <bug description="SOLSP-19C-INST  CVU WRONGLY REPORT ERROR PRVE-0438 WHEN CHECKING SOLARIS SRU ON SUPER CLUSTER NODES" number="29244766"/>
+        <bug description="GIPC SHOULD REGISTER FOR GPNP PROFILE UPDATE EVENTS" number="29244968"/>
+        <bug description="FLEX  ORAROOTAGENT COREDUMP AT CLSN_AGENT  GETORACLEHOMEATTRIB, CLEANUPOLDACFSLOGS" number="29248723"/>
+        <bug description="AIX-193-RAC FAIL TO START PDB SERVICE WITH ERROR OCI EXCP 44316 ORA-44316  INVALID ARGUMENT" number="29249583"/>
+        <bug description="LNX-19C-CVU CVU CANNOT DETECT MULTICAST DISABLED" number="29251564"/>
+        <bug description="RHP - ADD WC SKIPCOPY OPTION STILL DOES A DIRECT TRANSFER FOR BITS" number="29255616"/>
+        <bug description="RHP - RHPCTL -SKIPCOPY REQUIRES -GROUPS WITH GI WORKING COPY" number="29260224"/>
+        <bug description="DIAGNOSTIC PRINTS TOO VERBOSE, MAY EXPOSE SENSITIVE IPMI PASSWORD INFORMATION" number="29261695"/>
+        <bug description="ZDM  UNABLE TO USE NFS BASED BACKUP PATH" number="29271019"/>
+        <bug description="NEED TO PUT THE REASON FOR THE CSSD FAILURE IN THE CLUSTER ALERT.LOG" number="29273360"/>
+        <bug description="LNX-193-GH RHPCTL ADD DATABASE USING TEMPLATE W  RELATIVE PATH DOES NOT WORK" number="29282090"/>
+        <bug description="LNX-19C-UD UPGRADE DRY RUN HUNG AT SRVCTL UPGRADE MODEL WHIH 7 DBS AND 1K SERVICES CONFIGURED" number="29282666"/>
+        <bug description="XAG COMPONENT IN HAS FOR BUILDPATCH" number="29285453"/>
+        <bug description="BACKPORT FOR RTI 21823463  - UPGRADE ISSUE" number="29285621"/>
+        <bug description="NODE-2 FAILED TO JOIN CLUSTER IN UNICAST MODE" number="29290235"/>
+        <bug description="RHP - GI UPGRADE FAILS WITH [FATAL] [INS-10101] THE GIVEN RESPONSE FILE XXXX IS NOT FOUND" number="29292232"/>
+        <bug description="LNX-19C-GH STILL HIT PRGT-1017 AFTER UPDATE PATCH LEVEL ON TARGET DB" number="29293806"/>
+        <bug description="LNX_193_UD  MGMTCA QUERYREPOS HIT MGTCA-1101 SQL OPERATION FAILURE AFTER UPGRADED" number="29294753"/>
+        <bug description="DB SOFTWARE HOME PROV FAILS WITH A PATH HAVING ';' INJECTION ATTACK" number="29299830"/>
+        <bug description="EXADATA - CVU READS NPROC FROM BACKUP FOR  ETC SECURITY LIMITS.D 90-NPROC.CONF" number="29307090"/>
+        <bug description="EXADATA - CVU FLAGS MINOR KERNEL DIFFERENCES BETWEEN NODES AS A WARNING" number="29307109"/>
+        <bug description="ASM HANG DUE TO VOTING FILE RELOCATION DURING CELL ROLLING UPGRADE" number="29311336"/>
+        <bug description="19.2 SPRAC  11204 CRS UPGRADE T 19.2 FAILS DURING ROOTUPGRADE.SH ON REMOTE NODE WITH '-NOAUTOSTART' IS AN INVALID ARGUMENT" number="29329675"/>
+        <bug description="PERMISSIONS OF FEW FILES UNDER GIHOME BIN NEEDS UPDATE" number="29330791"/>
+        <bug description="RHPHELPER FAILS TO DRAIN SESSIONS WHEN A DB_UNIQUE_NAME IS BEING USED" number="29339299"/>
+        <bug description="REMOVE DEPENDENCY ON PERL MODULE WIN32API  FILE" number="29357821"/>
+        <bug description="LNX_193_UD  MGMTUA FAILED TO GET CORRECT GIMR STORAGE PATH" number="29360467"/>
+        <bug description="LNX-19C-UD UPGRADE DRY RUN REPORT PRCR-1006 FAILED TO ADD RES ASMNET1LSNR_ASM WHEN UPG FROM 11204" number="29360775"/>
+        <bug description="LNX-193-GH RERUN UPGRADE 12102 TO 193 W  -CONTINUE FAILED WHEN UPGRADE IN BATCHES" number="29367971"/>
+        <bug description="LNX-19C-UD 12102 UPG FAILE AT SRVCTL UPGRADE MODEL IN DRY RUN" number="29368725"/>
+        <bug description="HAIP SUBNET FLIPS UPON BOTH LINK DOWN UP EVENT" number="29379299"/>
+        <bug description="MOVING ASM TO SECOND INTERFACE - MOVES IN FIRST NODE AND NOT THE OTHER" number="29379381"/>
+        <bug description="EXA-191-UD UPGRADE FAILED SINCE ORA.RHPSERVER HAS HARD DEPENDENCY WITH MGMTDB" number="29380527"/>
+        <bug description="LNX-201-INST  ROOT.SH FAILED ON 1ST NODE  HIT CLSRSC-107  START OF GNS FAILED" number="29381000"/>
+        <bug description="LNX-191-GH DB UD FAILED AT PRE UA BECAUSE OF COPYLISTENER PICKING RANDOM PORT WHEN ENABLE FIREWALL" number="29382296"/>
+        <bug description="ENABLE UNICAST MODE ONLY USNG ENV VAR AND NOT CLOUD TYPE" number="29391301"/>
+        <bug description="3PLT UPDATE - NEED TO REVISE 3RD PARTY IN RHP" number="29393649"/>
+        <bug description="LNX-191-GH RHP DB UD FAILED AT PRE UA WHEN ENABLE FIREWALL" number="29402110"/>
+        <bug description="CHANGE TRACE FILE AND OLFSROOT PERMISSIONS" number="29411931"/>
+        <bug description="EXA-193-UD UPGRADE DRYRUN FAILED SINCE ORA.RHPSERVER HAS HARD DEPENDENCY WITH MGMTDB" number="29413360"/>
+        <bug description="LNX64-193 ROOT.SH RETURN CLSRSC-571 AND PRKC-1191 WHEN ADD NODE TO MC" number="29457319"/>
+        <bug description="LNX-19C-UD 11204 UPG HUNG AT SRVCLT UPGRADE MODEL FOR MORE THAN 10HOURS AND FAILED AT LAST" number="29465047"/>
+    </base_bugs>
+    <required_components>
+        <component internal_name="oracle.rdbms" opt_req="O" version="19.0.0.0.0"/>
+        <component internal_name="oracle.xag" opt_req="O" version="19.0.0.0.0"/>
+        <component internal_name="oracle.rhp.db" opt_req="O" version="19.0.0.0.0"/>
+        <component internal_name="oracle.rhp.crs" opt_req="O" version="19.0.0.0.0"/>
+        <component internal_name="oracle.has.rsf" opt_req="O" version="19.0.0.0.0"/>
+        <component internal_name="oracle.server" opt_req="O" version="19.0.0.0.0"/>
+        <component internal_name="oracle.has.db" opt_req="O" version="19.0.0.0.0"/>
+        <component internal_name="oracle.has.crs" opt_req="O" version="19.0.0.0.0"/>
+        <component internal_name="oracle.crs" opt_req="O" version="19.0.0.0.0"/>
+        <component internal_name="oracle.has.cvu" opt_req="O" version="19.0.0.0.0"/>
+        <component internal_name="oracle.rhp.common" opt_req="O" version="19.0.0.0.0"/>
+        <component internal_name="oracle.has.common.cvu" opt_req="O" version="19.0.0.0.0"/>
+        <component internal_name="oracle.has.common" opt_req="O" version="19.0.0.0.0"/>
+    </required_components>
+    <os_platforms>
+        <platform id="0" name="Generic Platform 1"/>
+    </os_platforms>
+    <executables/>
+    <instance_shutdown>true</instance_shutdown>
+    <instance_shutdown_message/>
+    <online_rac_installable>true</online_rac_installable>
+    <run_as_root>false</run_as_root>
+    <sql_migrate>false</sql_migrate>
+    <wls_prereq_oneoffs/>
+    <prereq_oneoffs/>
+    <overlay_oneoffs/>
+    <patch_type sub_type="update" value="bundle_member"/>
+    <patch_language value="en"/>
+    <product_family value="db"/>
+    <patching_model value="one-off"/>
+    <auto>false</auto>
+    <translatable>false</translatable>
+    <targets>
+        <target type="cluster" version="19.0.0.0.0"/>
+        <target type="rac_database" version="19.0.0.0.0"/>
+        <target type="oracle_database" version="19.0.0.0.0"/>
+        <target type="has" version="19.0.0.0.0"/>
+    </targets>
+    <application_dirs/>
+    <patch_characteristics>
+        <content_type value="generic"/>
+    </patch_characteristics>
+</oneoff_inventory>

@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<oneoff_inventory>
+    <opack_version version="14.1.0.1.14"/>
+    <patch_description>OJVM RELEASE UPDATE: 19.28.0.0.250715 (37847857)</patch_description>
+    <patch_id number="37847857"/>
+    <minimum_opatch_version>12.2.0.1.46</minimum_opatch_version>
+    <unique_patch_id>27534561</unique_patch_id>
+    <cannot_autorollback>false</cannot_autorollback>
+    <not_rollbackable>false</not_rollbackable>
+    <date_of_patch day="3" month="Jul" time="07:19:43 hrs" year="2025" zone="UTC"/>
+    <base_bugs>
+        <bug description="CREATE DIRECTORY JAVA$JOX$CUJS$DIRECTORY$ RESULTS IN ORA-00600 17090 ON DB OPEN" number="29445548"/>
+        <bug description="Fix for Bug 29254623" number="29254623"/>
+        <bug description="LNX-193-RAC: TOO MANY PDB%(%):## JIT CBK SKIPPING: PATCHING NOT COMPLETE IN PDB, PID % PDB % LOGS IN DB ALERT LOG" number="29540327"/>
+        <bug description="Fix for Bug 29774362" number="29774362"/>
+        <bug description="DATAPATCH APPLICATION FAILED DURING THE APPLICATION OF 19.5DBRU PATCH" number="30134746"/>
+        <bug description="Fix for Bug 30160625" number="30160625"/>
+        <bug description="Fix for Bug 30534662" number="30534662"/>
+        <bug description="JD EDWARDS DATABASE UPGRADE FROM 12.2 TO 19C FAILS WITH ORA-01652" number="29512125"/>
+        <bug description="JAVA STORED PROCEDURE IS FAILING WITH ORA-29532: JAVA.LANG.INTERNALERROR:(SUN.DC.PR.PATHSTROKER.CINITIALIZE2D) ERROR FROM 12.2 ONWARD" number="29942275"/>
+        <bug description="UPDATE JAVAVM JDK8 WITH JAVASE APR 2020 CPU CONTENT" number="30855101"/>
+        <bug description="UPDATE JAVAVM JDK8 WITH JAVASE JUL 2020 CPU CONTENT" number="31306261"/>
+        <bug description="INSTANCE STARTUP FAILS ORA-600 [KGLOBPG_IS_PKP] DURING ROLLING RU 19.7 APPLY" number="31359215"/>
+        <bug description="CLIENT STUBS GENERATED USING OJVMWCU THROWING RUNTIME EXCEPTION" number="30895577"/>
+        <bug description="JAVA.LANG.UNSATISFIEDLINKERROR: SUN.JAVA2D.PIPE.SHAPESPANITERATOR.PATHDONE" number="29224710"/>
+        <bug description="CIPHER TLS_ECDHE_RSA_WITH_AES_128_CBC MISSING SUNEC SECURITY PROVIDER IN JDK 1.7/JDK 1.8" number="26716835"/>
+        <bug description="Fix for Bug 31668872" number="31668872"/>
+        <bug description="UPDATE JAVAVM JDK8 WITH JAVASE JAN 2021 CPU CONTENT" number="32165759"/>
+        <bug description="CUMULATIVE BASE BUG FOR DNIZHEGO 21C JAVASPLAT AND JTREG FIXES" number="32069696"/>
+        <bug description="A SECOND LOOKUP OF CACERTS NOT FOUND WHEN USING JSERVER URL" number="32032733"/>
+        <bug description="INCREASED LIBRARY CACHE: MUTEX X AGAINST JAVA/LANG/OBJECT ON 18C AFTER UPGRADE FROM 11G" number="30889443"/>
+        <bug description="UPGRADING DATABASE FROM 12.1. TO 19.4 TAKING HOURS AND GETTING STUCK WHILE EXECUTING JVM RELATED SCRIPT" number="30674373"/>
+        <bug description="INCORRECT OUTPUT FROM JIT-COMPILED JAVA STORED PROCEDURES" number="32167592"/>
+        <bug description="UPDATE JAVAVM JDK8 WITH JAVASE APR 2021 CPU CONTENT" number="32523206"/>
+        <bug description="ALERT LOG FILLED WITH RE-OCCURRING MESSAGE JIT SKIPPING: PDB NOT OPEN PID ON 12.2 MULTITENNAT DB" number="29415774"/>
+        <bug description="EXECUTING A CUSTOM JAVA STORED PROCEDURE TAKES VERY LONG RUN-TIME ON 12.1.0.2 DB" number="28777073"/>
+        <bug description="EARLY-EUJS (FOR OJVM SMALL-BROWNOUT RAC ROLLING)" number="32124570"/>
+        <bug description="TRACKING INT DIFF IN SRGDBCU: ORA-600 [26599]" number="31247838"/>
+        <bug description="OH/JAVAVM/ADMIN/VERSION.LOG HAS PERMISSION 644 AND SHOULD HAVE 600" number="29540831"/>
+        <bug description="Fix for Bug 32892883" number="32892883"/>
+        <bug description="JVM-JDBC:JAVA.SQL.SQLRECOVERABLEEXCEPTION: IO ERROR: THE NETWORK ADAPTER COULD NOT ESTABLISH THE CONNECTION" number="31776121"/>
+        <bug description="Fix for Bug 33223248" number="33223248"/>
+        <bug description="UPDATE JAVAVM JDK8 WITH JAVASE JAN 2022 CPU CONTENT" number="33563137"/>
+        <bug description="LRGVMCC - ORA-7445 [_INTEL_SSE2_STRCAT()+161] [ACCESS_VIOLATION]" number="33184467"/>
+        <bug description="19C AND 21C BACKPORT OF POST-19C OJVM PDB SECURITY ENHANCEMENTS" number="31844357"/>
+        <bug description="DATAPATCH NEEDS TO BE EXECUTED TWICE AS IT INVALIDATES OBJECTS AND UTLRP DOES NOT VALIDATE UNLESS DB IS BOUNCED" number="31727233"/>
+        <bug description="EBS UPG:ALTER JAVA CLASS ORDSYS....FCTMEDIALIB RESOLVE HIT:ORA 600 [26599]" number="31494420"/>
+        <bug description="JONSTR_TO_PLATFORM_BYTES BROKEN FOR MULTI-BYTE CHARACTER SETS SINCE JDK8" number="28209601"/>
+        <bug description="[[STRING INCORRECTLY CREATED IN CERTAIN CODE PATHS IN JAVA STORED PROCEDURES" number="31311732"/>
+        <bug description="Fix for Bug 33805155" number="33805155"/>
+        <bug description="Fix for Bug 34149263" number="34149263"/>
+        <bug description="JAVA.NET.TIMEOUTEXCEPTION IN DUALSTACKPLAINSOCKETIMPL.CONNECT()" number="33872610"/>
+        <bug description="ORA-07445: EXCEPTION ENCOUNTERED: CORE DUMP [KGHALF()+613] [SIGSEGV]" number="33822881"/>
+        <bug description="Fix for Bug 34473578" number="34473578"/>
+        <bug description="CREATE OR REPLACE JAVA SYSTEM (CJS) SHOULD NOT RUN IN AN INVALID INSTALL CONTEXT" number="34450366"/>
+        <bug description="Fix for Bug 34461697" number="34461697"/>
+        <bug description="ADB-D:FPMS EUJS: EUJS VALIDATION FAILING WITH PDB HAVING &gt;17OCPUS WHEN SINGLE SERVICE IS USED" number="34346865"/>
+        <bug description="ORA-65274 IN CREATE JAVA SYSTEM WHEN MDL APPLICATION OBJECTS PRESENT" number="30408443"/>
+        <bug description="TLSV1.3 USAGE RESULTS IN A HANDSHAKE ERROR." number="34604941"/>
+        <bug description="UPDATE JAVAVM JDK8 WITH JAVASE JAN 2023 CPU CONTENT" number="34786432"/>
+        <bug description="Fix for Bug 35021301" number="35021301"/>
+        <bug description="DATABASE JAVA THREAD STORAGE CREATED WITH EXECUTE PROTECTION UNNECESSARILY" number="28674263"/>
+        <bug description="LOADJAVA/DROPJAVA PERFORMANCE ISSUE IN ORACLE DB 19.3" number="30796980"/>
+        <bug description="JSP CODE HANGS FOR FILEWATCHER PROGRAM IN LINUX" number="32587721"/>
+        <bug description="EC.C COMPILE FAILURE" number="29707582"/>
+        <bug description="JAVAVM DBMS_JAVA.LOADJAVA/DROPJAVA CALLS DONE DURING DATABASE PATCHING LOAD FILES FROM PATH_PREFIX" number="35309432"/>
+        <bug description="UPDATE JAVAVM JDK8 WITH JAVASE JUL 2023 CPU CONTENT" number="35354098"/>
+        <bug description="AIM ORA-600 [KJBLOCALOBJ_NOLOCK:LT] - KJBLOCALOBJ_NOLOCK" number="34022133"/>
+        <bug description="UPDATE JAVAVM JDK8 WITH JAVASE OCT 2023 CPU CONTENT" number="35717077"/>
+        <bug description="DATAPATCH HANGS ENDLESSLY WHEN RUNNING JVMPSU.SQL ON DBMS_JAVA_TEST.FUNCALL('-RUJS', ' ')" number="33863611"/>
+        <bug description="UPDATE 19C WITH ENHANCE TLS CONNECTION SUPPORT FIX (JDK-8317547)" number="36138120"/>
+        <bug description="ROUTE OJVM {TCP|HTTP} REQUESTS THROUGH REVERSE CONNECTION ENDP(RCE)" number="35480672"/>
+        <bug description="Fix for Bug 35240410" number="35240410"/>
+        <bug description="TRACKING BUG TO BACKPORT JOX CHANGES FOR BUG 33413544 TO OJVMRU" number="36021678"/>
+        <bug description="UPDATE JAVAVM JDK8 WITH JAVASE JAN 2024 CPU CONTENT" number="35949725"/>
+        <bug description="JAVA.LANG.EXCEPTIONININITIALIZERERROR AFTER APPLYING JUL2023 OJVM PATCH" number="35806962"/>
+        <bug description="ORA-22937 DURING CREATE JAVA SYSTEM IN PDB" number="31395708"/>
+        <bug description="JOX CHANGES REQUIRED IN OJVM, TO SUPPORT THE FIX PROVIDED FOR BUG 31587018" number="36368005"/>
+        <bug description="JVM:ORA-29532: JAVA CALL TERMINATED BY UNCAUGHT JAVA EXCEPTION: JAVA.LANG.EXCEPTION: JAVA.NET.SOCKETEXCEPTION: GETSOCKOPT() FAILED" number="29372173"/>
+        <bug description="ADW18.1CDB: OJVM USAGE OF {TCP|HTTP} DOESN'T HONOUR UNRESTRICTED_NET_ACCESS LDP" number="35397949"/>
+        <bug description="AFTER PLUGGING IN AND UPGRADING A 18C PDB INTO A 19C CDB WE ARE SEEING THE ALERT LOG BEEING FLOODED WITH MESSAGES; ## JIT CBK SKIPPING PATCHING NOT COMPLETE IN PDB THE PDB DOSN'T HAVE JAVA, BUT THE CDB HAVE" number="33427267"/>
+        <bug description="Fix for Bug 36210227" number="36210227"/>
+        <bug description="23.3 OJVM FIPS 140 SUPPORT" number="35355058"/>
+        <bug description="JDBC CODE CLEARS STACK_TOP CAUSING MAIN THREAD TO BE NOT GC'ED" number="36365931"/>
+        <bug description="UPDATE JAVAVM JDK8 WITH JAVASE JUL2024 CPU CONTENT" number="36533029"/>
+        <bug description="IMPROVEMENTS NEEDED IN OJVM LOCKDOWN CHECKS THAT ARE UNNECESSARILY TOO RESTRICIVE IN A FEW CASES" number="34817208"/>
+        <bug description="ENSURE IOC_START_EXPORT() DOES NOT VALIDATE JAVA OBJECTS DURING EXPORT" number="36405296"/>
+        <bug description="DST CHANGES FOR DST V16 (TZDATA2011G) NEED OJVM FIX" number="12565410"/>
+        <bug description="DST CHANGES FOR DST V17 (TZDATA2011I) NEED OJVM FIX" number="12949919"/>
+        <bug description="DST CHANGES FOR DSTV18 (TZDATA2012C) NEED OJVM FIX" number="14112098"/>
+        <bug description="DST CHANGES FOR DSTV19 (TZDATA2012J) NEED OJVM FIX" number="15897884"/>
+        <bug description="DST CHANGES FOR DSTV20 (TZDATA2013C) NEED OJVM FIX" number="16799766"/>
+        <bug description="DST CHANGES FOR DSTV21 (TZDATA2013E) NEED OJVM FIX" number="17443054"/>
+        <bug description="DST CHANGES FOR DSTV22 (TZDATA2014C) NEED OJVM FIX" number="18759260"/>
+        <bug description="DST CHANGES FOR DSTV23 (TZDATA2014F) NEED OJVM FIX" number="19397646"/>
+        <bug description="DST CHANGES FOR DSTV24 (TZDATA2015D) NEED OJVM FIX" number="20875943"/>
+        <bug description="DST CHANGES FOR DSTV25 (TZDATA2015G) NEED OJVM FIX" number="22037067"/>
+        <bug description="DST CHANGES FOR DSTV26 (TZDATA2016D) NEED OJVM FIX" number="22873666"/>
+        <bug description="DSTV27 UPDATE JUNE 2016 TZDATA2016F (OJVM CHANGES)" number="23614160"/>
+        <bug description="OJVM DSTV28 UPDATE OCT 2016 TZDATA2016G" number="24701882"/>
+        <bug description="DST CHANGES FOR DSTV29 (TZDATA2016J ) NEED OJVM FIX" number="25173172"/>
+        <bug description="DST CHANGES FOR DSTV30 (TZDATA2017B ) NEED OJVM FIX" number="25881271"/>
+        <bug description="PROACTIVE DSTV31 UPDATE TZDATA2017C NEED OJVM FIX" number="27015468"/>
+        <bug description="PROACTIVE DSTV32 UPDATE TZDATA2018E NEED OJVM FIX" number="28127287"/>
+        <bug description="DSTV33 UPDATE TZDATA2018G NEED OJVM FIX" number="28852334"/>
+        <bug description="DSTV34 UPDATE TZDATA2019B NEED OJVM FIX" number="29997959"/>
+        <bug description="DSTV35 UPDATE TZDATA2020A NEED OJVM FIX" number="31335142"/>
+        <bug description="DSTV36 UPDATE TZDATA2020E NEED OJVM FIX" number="32327208"/>
+        <bug description="DSTV37 UPDATE TZDATA2021E NEED OJVM FIX" number="33613833"/>
+        <bug description="DSTV38 UPDATE TZDATA2022A NEED OJVM FIX" number="34006650"/>
+        <bug description="DSTV39 UPDATE TZDATA2022C NEED OJVM FIX" number="34533150"/>
+        <bug description="DSTV40 UPDATE TZDATA2022E NEED OJVM FIX" number="34699616"/>
+        <bug description="DSTV41 UPDATE TZDATA2022G NEED OJVM FIX" number="35099674"/>
+        <bug description="DSTV42 UPDATE TZDATA2023C NEED OJVM FIX" number="35239280"/>
+        <bug description="DSTV43 UPDATE TZDATA2024A NEED OJVM FIX" number="36260537"/>
+        <bug description="DATAPATCH HANGS ENDLESSLY WHEN RUNNING JVMPSU.SQL" number="36761847"/>
+        <bug description="OJVM S JAXP SUPPORT NEEDS IMPROVEMENTS IN FILE SYSTEM DEPENDENCIES AND ERROR AND LOG REPORTING" number="36686958"/>
+        <bug description="Fix for Bug 36866733" number="36866733"/>
+        <bug description="TRACKING BUG FOR JAVAVM BRANCH PORTION OF BUG 34383457 FIX" number="37065931"/>
+        <bug description="TRACKING BUG FOR JAVAVM BRANCH PORTION OF BUG 37092038 FIX" number="37302292"/>
+        <bug description="JVM JAVA.LANG.INTERNALERROR SUN.NET.PORTCONFIG UNKNOWN OS" number="30273945"/>
+        <bug description="ORA-29510 WHEN CREATING A NEW DATABASE USING DBCA WHEN PATCH 32167592 IS INSTALLED" number="32780908"/>
+        <bug description="JAVA REINSTALL FAILS" number="36524536"/>
+        <bug description="FORTIFY PRIVACY VIOLATION JAVAVM/SRC/J/ORACLE/AURORA/SERVER/TOOLS/LOADJAVA/DROPJAVA.JAVA274" number="34505036"/>
+        <bug description="UPDATE JAVAVM JDK8 WITH JAVASE JAN2025 CPU CONTENT FOR 12.2.0.1, 18C, 19C &amp; 21C" number="37222265"/>
+        <bug description="LOCAL SYSDBA USERS CAN BYPASS PATH_PREFIX RESTRICTION BY USING JAVA.NIO.FILE.PATH API TO COMPROMISE ALL CONTAINERS." number="37163984"/>
+        <bug description="OJVM NEEDS TO RELAX PORT NUMBER CHECKING FOR UNRESTRICTED_NETWORK_ACCESS DISABLED WHEN PRIVATE ENDPOINTS ARE ENABLED IN A PDB" number="37049281"/>
+        <bug description="23.8 RUGI PATCH APPLY FAILED WITH DATAPATCH ERRORS ON PLS-00201: IDENTIFIER 'INITJVMAUX.DROP_SYS_CLASS' AND IDENTIFIER 'INITJVMAUX.DROP_SYS_RESOURCE' DECLARATION ERROR ONLY IN EXA ON TOP OF BASE AND N-1" number="37733669"/>
+        <bug description="BROKEN LINK IN LRGSRGSHIP TESTING FOR JAVAVM_23.0.0.0.0_LINUX.X64_250308" number="37686779"/>
+        <bug description="Fix for Bug 29867088" number="29867088"/>
+        <bug description="UPGRADE ISSUES WITH HTTP_CLIENT.JAR AFTER CISA MODIFICATIONS" number="37613413"/>
+        <bug description="TRACKING INT DIF IN SRGDBCONJ: ORA-7445_IOC_ACCESS_IU.DIF" number="29416916"/>
+        <bug description="3 JAVAVM JARS SHOULD NOT BE CHECKED-IN" number="37561754"/>
+        <bug description="OBJECT JAVAX.MAIL.JAR SHOULD NOT BE CHECKED-IN AND OBJECT ACTIVATION.JAR SHOULD NOT BE CHECKED-IN" number="37273789"/>
+        <bug description="Fix for Bug 37394080" number="37394080"/>
+        <bug description="DSTV44 UPDATE - TZDATA2025A - NEED OJVM FIX" number="37537990"/>
+        <bug description="OBJECT JTA.JAR SHOULD NOT BE CHECKED-IN" number="37273637"/>
+        <bug description="OBJECT HTTP_CLIENT.JAR SHOULD NOT BE CHECKED-IN" number="37273777"/>
+        <bug description="UPDATE JAVAVM JDK8 WITH JAVASE APR2025 CPU CONTENT FOR 12.2.0.1, 18C, 19C &amp; 21C" number="37542138"/>
+        <bug description="Fix for Bug 31372162" number="31372162"/>
+        <bug description="U&#9;OBJECT JAVADOC.ZIP SHOULD NOT BE CHECKED-IN" number="37274373"/>
+        <bug description="OBJECT JACCELERATOR.ZIP SHOULD NOT BE CHECKED-IN" number="37273614"/>
+        <bug description="SV23.1SQLINJ: POTENTIAL VULNERABILITY IN SYS.RMJVM" number="33900490"/>
+        <bug description="JDBCSHELLCONNECTION.JAVA:205 SQL INJECTION FORTIFY" number="35140580"/>
+        <bug description="OBJECT COSNAMING.JAR, LDAP.JAR, JNDI.JAR, PROVIDERUTIL.JAR SHOULD NOT BE CHECKED-IN" number="37273606"/>
+        <bug description="Fix for Bug 37064285" number="37064285"/>
+        <bug description="Fix for Bug 33502363" number="33502363"/>
+        <bug description="Fix for Bug 34282382" number="34282382"/>
+        <bug description="Fix for Bug 35655381" number="35655381"/>
+        <bug description="Fix for Bug 36043673" number="36043673"/>
+        <bug description="JAVA SECURITY MANAGER EXCEPTIONS DIFFICULT TO DIAGNOSE" number="37301460"/>
+        <bug description="OJVM POLICY TABLE PERMISSIONS CAN BE TRIVIALLY EXTENDED TO ADMINISTER GRANTS WITH MORE COMPLEX NAME PATTERNS" number="37688635"/>
+        <bug description="MAKE JTA.JAR AND HTTP_CLIENT.JAR DO'S" number="37734366"/>
+        <bug description="23.9 RUGI TO 23.8 BIN/DBCA MOVE IS FAILING DURING ROLLBACK WITH DATAPATCH ERRORS ORA-06512: SYS.DBMS_JAVA ON BUG37273789_ROLLBACK.SQL FILE" number="37875572"/>
+        <bug description="SV23.8JAVASPLAT: ORA-7445 [JAVA_UTIL_CONCURRENT_CONCURRENTHASHMAP__TABAT()+180]" number="37896520"/>
+        <bug description="Fix for Bug 37929314" number="37929314"/>
+        <bug description="Fix for Bug 37986256" number="37986256"/>
+        <bug description="Fix for Bug 37986558" number="37986558"/>
+    </base_bugs>
+    <required_components>
+        <component internal_name="oracle.javavm.server" opt_req="O" version="19.0.0.0.0"/>
+        <component internal_name="oracle.javavm.server.core" opt_req="O" version="19.0.0.0.0"/>
+        <component internal_name="oracle.rdbms.dbscripts" opt_req="O" version="19.0.0.0.0"/>
+        <component internal_name="oracle.rdbms" opt_req="O" version="19.0.0.0.0"/>
+        <component internal_name="oracle.javavm.client" opt_req="O" version="19.0.0.0.0"/>
+    </required_components>
+    <os_platforms>
+        <platform id="226" name="Linux x86-64"/>
+    </os_platforms>
+    <executables>
+        <executable path="%ORACLE_HOME%/bin/oracle"/>
+    </executables>
+    <instance_shutdown>true</instance_shutdown>
+    <instance_shutdown_message/>
+    <online_rac_installable>true</online_rac_installable>
+    <ojvm>false</ojvm>
+    <rhp>false</rhp>
+    <two_phase_rolling>false</two_phase_rolling>
+    <ru>false</ru>
+    <ru_version/>
+    <rur>false</rur>
+    <rur_version/>
+    <run_as_root>false</run_as_root>
+    <sql_migrate>false</sql_migrate>
+    <sql_patch>true</sql_patch>
+    <sql_patch_database_startup_mode>normal</sql_patch_database_startup_mode>
+    <wls_prereq_oneoffs/>
+    <prereq_oneoffs/>
+    <overlay_oneoffs/>
+    <patch_type value="singleton"/>
+    <patch_language value="en"/>
+    <product_family value="db"/>
+    <patching_model value="one-off"/>
+    <auto>false</auto>
+    <translatable>false</translatable>
+    <application_dirs/>
+    <patch_characteristics>
+        <content_type value="generic"/>
+    </patch_characteristics>
+</oneoff_inventory>

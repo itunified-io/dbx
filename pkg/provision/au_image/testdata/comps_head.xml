@@ -1,0 +1,200 @@
+<?xml version="1.0" standalone="yes" ?>
+<!-- Copyright (c) 1999, 2025, Oracle and/or its affiliates.
+All rights reserved. -->
+<!-- Do not modify the contents of this file by hand. -->
+<PRD_LIST>
+<TL_LIST>
+<COMP NAME="oracle.server" VER="19.0.0.0.0" BUILD_NUMBER="0" BUILD_TIME="20190417.011331" REP_VER="0.0.0.0.0" RELEASE="Production" INV_LOC="Components/oracle.server/19.0.0.0.0/1/" LANGS="ALL_LANGS" XML_INV_LOC="Components21/oracle.server/19.0.0.0.0/" ACT_INST_VER="12.2.0.7.0" DEINST_VER="11.2.0.0.0" INSTALL_TIME="2025.Sep.16 14:08:26 CEST" INST_LOC="/u01/app/oracle/scratch/au19.28_v1/oracle.server">
+   <EXT_NAME>Oracle Database 19c</EXT_NAME>
+   <DESC>Installs an optional preconfigured starter database, product options, management tools, networking services, utilities, and basic client software for an Oracle Database server. This option also supports Automatic Storage Management database configuration.</DESC>
+   <DESCID>COMPONENT_DESC</DESCID>
+   <STG_INFO OSP_VER="10.2.0.0.0"/>
+   <CMP_JAR_INFO>
+      <INFO NAME="filemapObj" VAL="Components/oracle/server/v19_0_0_0_0/filemap.xml"/>
+      <INFO NAME="helpDir" VAL="Components/oracle/server/v19_0_0_0_0/help/"/>
+      <INFO NAME="actionsClass" VAL="Components.oracle.server.v19_0_0_0_0.CompActions"/>
+      <INFO NAME="resourceClass" VAL="Components.oracle.server.v19_0_0_0_0.resources.CompRes"/>
+      <INFO NAME="identifiersXML" VAL="Components/oracle/server/v19_0_0_0_0/identifiers.xml"/>
+      <INFO NAME="contextClass" VAL="Components.oracle.server.v19_0_0_0_0.CompContext"/>
+      <INFO NAME="fastCopyLogXML" VAL="Components/oracle/server/v19_0_0_0_0/fastCopyLog.xml"/>
+   </CMP_JAR_INFO>
+   <LOC_INFO INST_DFN_LOC="../Scripts" JAR_NAME="install1.jar"/>
+   <BOOK NAME="oracle.server.hs"/>
+   <PRE_REQ DEF="F"/>
+   <PROD_HOME DEF="F"/>
+   <LANG_IDX_MAP>
+      <LANG LIST="en fr ar bn pt_BR bg fr_CA ca hr cs da nl ar_EG en_GB et fi de el iw hu is in it ja ko es lv lt ms es_MX no pl pt ro ru zh_CN sk sl es_ES sv th zh_TW tr uk vi"/>
+      <LANGSET IDX="1" BITSET="{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44}"/>
+      <LANGSET IDX="2" BITSET="{}"/>
+      <LANGSET IDX="3" BITSET="{0}"/>
+      <LANGSET IDX="4" BITSET="{0, 1, 16, 23}"/>
+      <LANGSET IDX="5" BITSET="{0, 23}"/>
+   </LANG_IDX_MAP>
+   <PLAT_IDX_MAP>
+      <PLAT LIST="46"/>
+      <PLATSET IDX="1" BITSET="{0}"/>
+   </PLAT_IDX_MAP>
+   <DST_IDX_MAP>
+      <DST LIST="%ORACLE_HOME% %INVENTORY_LOCATION% %s_TMPDIR_LOC% %s_TEMP_LOC%"/>
+   </DST_IDX_MAP>
+   <DEP_GRP_LIST>
+      <DEP_GRP NAME="Optional" EXT_NAME="Optional" TYPE="O">
+         <DEP_LIST>
+            <DEP NAME="oracle.rdbms" VER="19.0.0.0.0" PLAT="Linux"/>
+            <DEP NAME="oracle.options" VER="19.0.0.0.0" PLAT="Linux"/>
+            <DEP NAME="oracle.network" VER="19.0.0.0.0" PLAT="Linux"/>
+            <DEP NAME="oracle.rdbms.oci" VER="19.0.0.0.0" PLAT="Linux"/>
+            <DEP NAME="oracle.rdbms.drdaas" VER="19.0.0.0.0" PLAT="Linux"/>
+            <DEP NAME="oracle.precomp" VER="19.0.0.0.0" PLAT="Linux"/>
+            <DEP NAME="oracle.xdk" VER="19.0.0.0.0" PLAT="Linux"/>
+            <DEP NAME="oracle.winprod" VER="19.0.0.0.0" PLAT="Linux"/>
+            <DEP NAME="oracle.odbc" VER="19.0.0.0.0" PLAT="Linux"/>
+            <DEP NAME="oracle.sysman.ccr" VER="10.2.4.0.0" PLAT="Linux"/>
+            <DEP NAME="oracle.sysman.ccr.client" VER="10.3.2.1.0" PLAT="Linux"/>
+            <DEP NAME="oracle.rdbms.install.ovabplugin" VER="19.0.0.0.0" PLAT="Linux"/>
+         </DEP_LIST>
+      </DEP_GRP>
+      <DEP_GRP NAME="Required" EXT_NAME="Required" TYPE="R">
+         <DEP_LIST>
+            <DEP NAME="oracle.rdbms.install.common" VER="19.0.0.0.0" PLAT="Linux"/>
+            <DEP NAME="oracle.install.deinstalltool" VER="19.0.0.0.0" PLAT="Linux"/>
+            <DEP NAME="oracle.rdbms.install.seeddb" VER="19.0.0.0.0" PLAT="Linux"/>
+            <DEP NAME="oracle.tfa.db" VER="19.0.0.0.0" PLAT="Linux"/>
+         </DEP_LIST>
+      </DEP_GRP>
+      <DEP_GRP NAME="OptionalDecideNow" EXT_NAME="OptionalDecideNow" TYPE="O">
+         <DEP_LIST>
+            <DEP NAME="oracle.swd.oui" VER="10.1.0.2.0" PLAT="Linux"/>
+            <DEP NAME="oracle.dbjava.jdbc" VER="19.0.0.0.0" PLAT="Linux"/>
+            <DEP NAME="oracle.swd.opatchautodb" VER="12.2.0.1.5" PLAT="Linux"/>
+         </DEP_LIST>
+      </DEP_GRP>
+   </DEP_GRP_LIST>
+   <DEP_LIST>
+      <DEP NAME="oracle.rdbms" VER="19.0.0.0.0" DEP_GRP_NAME="Optional" HOME_IDX="1"/>
+      <DEP NAME="oracle.options" VER="19.0.0.0.0" DEP_GRP_NAME="Optional" HOME_IDX="1"/>
+      <DEP NAME="oracle.network" VER="19.0.0.0.0" DEP_GRP_NAME="Optional" HOME_IDX="1"/>
+      <DEP NAME="oracle.rdbms.oci" VER="19.0.0.0.0" DEP_GRP_NAME="Optional" HOME_IDX="1"/>
+      <DEP NAME="oracle.rdbms.drdaas" VER="19.0.0.0.0" DEP_GRP_NAME="Optional" HOME_IDX="1"/>
+      <DEP NAME="oracle.precomp" VER="19.0.0.0.0" DEP_GRP_NAME="Optional" HOME_IDX="1"/>
+      <DEP NAME="oracle.xdk" VER="19.0.0.0.0" DEP_GRP_NAME="Optional" HOME_IDX="1"/>
+      <DEP NAME="oracle.odbc" VER="19.0.0.0.0" DEP_GRP_NAME="Optional" HOME_IDX="1"/>
+      <DEP NAME="oracle.rdbms.install.common" VER="19.0.0.0.0" DEP_GRP_NAME="Required" HOME_IDX="1"/>
+      <DEP NAME="oracle.install.deinstalltool" VER="19.0.0.0.0" DEP_GRP_NAME="Required" HOME_IDX="1"/>
+      <DEP NAME="oracle.rdbms.install.seeddb" VER="19.0.0.0.0" DEP_GRP_NAME="Required" HOME_IDX="1"/>
+      <DEP NAME="oracle.tfa.db" VER="19.0.0.0.0" DEP_GRP_NAME="Required" HOME_IDX="1"/>
+      <DEP NAME="oracle.swd.oui" VER="12.2.0.7.0" DEP_GRP_NAME="OptionalDecideNow" HOME_IDX="1"/>
+      <DEP NAME="oracle.dbjava.jdbc" VER="19.0.0.0.0" DEP_GRP_NAME="OptionalDecideNow" HOME_IDX="1"/>
+      <DEP NAME="oracle.swd.opatchautodb" VER="12.2.0.1.5" DEP_GRP_NAME="OptionalDecideNow" HOME_IDX="1"/>
+   </DEP_LIST>
+   <REF_LIST>
+      <REF NAME="oracle.server" VER="19.0.0.0.0" HOME_IDX="1"/>
+   </REF_LIST>
+   <INST_TYPE_LIST>
+      <INST_TYPE NAME="EE" NAME_ID="EE" DESC_ID="EE_DESC"/>
+   </INST_TYPE_LIST>
+   <FILESIZEINFO>
+      <DEST VOLUME="%ORACLE_HOME%" SPACE_REQ="102615"/>
+      <DEST VOLUME="%INVENTORY_LOCATION%" SPACE_REQ="2000"/>
+      <DEST VOLUME="%s_TMPDIR_LOC%" SPACE_REQ="0"/>
+      <DEST VOLUME="%s_TEMP_LOC%" SPACE_REQ="0"/>
+   </FILESIZEINFO>
+</COMP>
+</TL_LIST>
+<COMP_LIST>
+<COMP NAME="oracle.jdk" VER="1.8.0.201.0" BUILD_NUMBER="0" BUILD_TIME="20190417.011331" REP_VER="0.0.0.0.0" RELEASE="Production" INV_LOC="Components/oracle.jdk/1.8.0.201.0/1/" LANGS="ALL_LANGS" XML_INV_LOC="Components21/oracle.jdk/1.8.0.201.0/" ACT_INST_VER="12.2.0.7.0" DEINST_VER="11.2.0.0.0" INSTALL_TIME="2025.Sep.16 14:08:26 CEST" INST_LOC="/u01/app/oracle/scratch/au19.28_v1/jdk">
+   <EXT_NAME>Java Development Kit</EXT_NAME>
+   <DESC>Installs Java Development Kit</DESC>
+   <DESCID>COMPONENT_DESC</DESCID>
+   <STG_INFO OSP_VER="10.2.0.0.0"/>
+   <CMP_JAR_INFO>
+      <INFO NAME="filemapObj" VAL="Components/oracle/jdk/v1_8_0_201_0/filemap.xml"/>
+      <INFO NAME="helpDir" VAL="Components/oracle/jdk/v1_8_0_201_0/help/"/>
+      <INFO NAME="actionsClass" VAL="Components.oracle.jdk.v1_8_0_201_0.CompActions"/>
+      <INFO NAME="resourceClass" VAL="Components.oracle.jdk.v1_8_0_201_0.resources.CompRes"/>
+      <INFO NAME="identifiersXML" VAL="Components/oracle/jdk/v1_8_0_201_0/identifiers.xml"/>
+      <INFO NAME="contextClass" VAL="Components.oracle.jdk.v1_8_0_201_0.CompContext"/>
+      <INFO NAME="fastCopyLogXML" VAL="Components/oracle/jdk/v1_8_0_201_0/fastCopyLog.xml"/>
+   </CMP_JAR_INFO>
+   <LOC_INFO INST_DFN_LOC="../Scripts" JAR_NAME="install1.jar"/>
+   <BOOK NAME="oracle.jdk.hs"/>
+   <PRE_REQ DEF="F"/>
+   <PROD_HOME DEF="F"/>
+   <LANG_IDX_MAP>
+      <LANG LIST="en fr ar bn pt_BR bg fr_CA ca hr cs da nl ar_EG en_GB et fi de el iw hu is in it ja ko es lv lt ms es_MX no pl pt ro ru zh_CN sk sl es_ES sv th zh_TW tr uk vi"/>
+      <LANGSET IDX="1" BITSET="{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44}"/>
+   </LANG_IDX_MAP>
+   <PLAT_IDX_MAP>
+      <PLAT LIST="46"/>
+      <PLATSET IDX="1" BITSET="{0}"/>
+   </PLAT_IDX_MAP>
+   <DST_IDX_MAP>
+      <DST LIST="%ORACLE_HOME% %INVENTORY_LOCATION%"/>
+   </DST_IDX_MAP>
+   <DEP_GRP_LIST/>
+   <DEP_LIST/>
+   <REF_LIST>
+      <REF NAME="oracle.swd.oui" VER="12.2.0.7.0" HOME_IDX="1"/>
+      <REF NAME="oracle.javavm.client" VER="19.0.0.0.0" HOME_IDX="1"/>
+      <REF NAME="oracle.precomp.common" VER="19.0.0.0.0" HOME_IDX="1"/>
+      <REF NAME="oracle.rdbms.install.common" VER="19.0.0.0.0" HOME_IDX="1"/>
+      <REF NAME="oracle.assistants.acf" VER="19.0.0.0.0" HOME_IDX="1"/>
+      <REF NAME="oracle.assistants.server" VER="19.0.0.0.0" HOME_IDX="1"/>
+      <REF NAME="oracle.rdbms.scheduler" VER="19.0.0.0.0" HOME_IDX="1"/>
+   </REF_LIST>
+   <INST_TYPE_LIST>
+      <INST_TYPE NAME="Custom" NAME_ID="Custom" DESC_ID=""/>
+   </INST_TYPE_LIST>
+   <FILESIZEINFO>
+      <DEST VOLUME="%ORACLE_HOME%" SPACE_REQ="373727698"/>
+      <DEST VOLUME="%INVENTORY_LOCATION%" SPACE_REQ="2000"/>
+   </FILESIZEINFO>
+</COMP>
+<COMP NAME="oracle.swd.oui.core.min" VER="12.2.0.7.0" BUILD_NUMBER="0" BUILD_TIME="20190417.011420" REP_VER="0.0.0.0.0" RELEASE="Production" INV_LOC="Components/oracle.swd.oui.core.min/12.2.0.7.0/1/" LANGS="ALL_LANGS" XML_INV_LOC="Components21/oracle.swd.oui.core.min/12.2.0.7.0/" ACT_INST_VER="12.2.0.7.0" DEINST_VER="11.2.0.0.0" INSTALL_TIME="2025.Sep.16 14:08:26 CEST" INST_LOC="/u01/app/oracle/scratch/au19.28_v1/oracle_swd_oui_core_min">
+   <EXT_NAME>oracle.swd.oui.core.min</EXT_NAME>
+   <DESC>New OUI core minimum component that contains only the jars that are required for
+a) Patching via OPatch
+b) Applying Patchsets via OUI
+c) Inventory Management</DESC>
+   <DESCID>COMPONENT_DESC</DESCID>
+   <STG_INFO OSP_VER="10.2.0.0.0"/>
+   <CMP_JAR_INFO>
+      <INFO NAME="filemapObj" VAL="Components/oracle/swd/oui/core/min/v12_2_0_7_0/filemap.xml"/>
+      <INFO NAME="helpDir" VAL="Components/oracle/swd/oui/core/min/v12_2_0_7_0/help/"/>
+      <INFO NAME="actionsClass" VAL="Components.oracle.swd.oui.core.min.v12_2_0_7_0.CompActions"/>
+      <INFO NAME="resourceClass" VAL="Components.oracle.swd.oui.core.min.v12_2_0_7_0.resources.CompRes"/>
+      <INFO NAME="identifiersXML" VAL="Components/oracle/swd/oui/core/min/v12_2_0_7_0/identifiers.xml"/>
+      <INFO NAME="contextClass" VAL="Components.oracle.swd.oui.core.min.v12_2_0_7_0.CompContext"/>
+      <INFO NAME="fastCopyLogXML" VAL="Components/oracle/swd/oui/core/min/v12_2_0_7_0/fastCopyLog.xml"/>
+   </CMP_JAR_INFO>
+   <LOC_INFO INST_DFN_LOC="../Scripts" JAR_NAME="install1.jar"/>
+   <BOOK NAME="oracle.swd.oui.core.min.hs"/>
+   <PRE_REQ DEF="F"/>
+   <PROD_HOME DEF="F"/>
+   <LANG_IDX_MAP>
+      <LANG LIST="en fr ar bn pt_BR bg fr_CA ca hr cs da nl ar_EG en_GB et fi de el iw hu is in it ja ko es lv lt ms es_MX no pl pt ro ru zh_CN sk sl es_ES sv th zh_TW tr uk vi"/>
+      <LANGSET IDX="1" BITSET="{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44}"/>
+   </LANG_IDX_MAP>
+   <PLAT_IDX_MAP>
+      <PLAT LIST="46"/>
+      <PLATSET IDX="1" BITSET="{0}"/>
+   </PLAT_IDX_MAP>
+   <DST_IDX_MAP>
+      <DST LIST="%ORACLE_HOME% %INVENTORY_LOCATION%"/>
+   </DST_IDX_MAP>
+   <DEP_GRP_LIST/>
+   <DEP_LIST/>
+   <REF_LIST>
+      <REF NAME="oracle.swd.oui.core" VER="12.2.0.7.0" HOME_IDX="1"/>
+   </REF_LIST>
+   <INST_TYPE_LIST>
+      <INST_TYPE NAME="Custom" NAME_ID="Custom" DESC_ID="Custom_DESC"/>
+   </INST_TYPE_LIST>
+   <FILESIZEINFO>
+      <DEST VOLUME="%ORACLE_HOME%" SPACE_REQ="8881274"/>
+      <DEST VOLUME="%INVENTORY_LOCATION%" SPACE_REQ="2000"/>
+   </FILESIZEINFO>
+</COMP>
+<COMP NAME="oracle.swd.oui.core" VER="12.2.0.7.0" BUILD_NUMBER="0" BUILD_TIME="20190417.011420" REP_VER="0.0.0.0.0" RELEASE="Production" INV_LOC="Components/oracle.swd.oui.core/12.2.0.7.0/1/" LANGS="ALL_LANGS" XML_INV_LOC="Components21/oracle.swd.oui.core/12.2.0.7.0/" ACT_INST_VER="12.2.0.7.0" DEINST_VER="11.2.0.0.0" INSTALL_TIME="2025.Sep.16 14:08:26 CEST" INST_LOC="/u01/app/oracle/scratch/au19.28_v1/oui">
+   <EXT_NAME>Installer SDK Component</EXT_NAME>
+   <DESC>Install SDK libraries available for install developers</DESC>

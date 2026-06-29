@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<oneoff_inventory>
+    <opack_version version="14.1.0.1.19"/>
+    <patch_description>JDK BUNDLE PATCH 19.0.0.0.250715</patch_description>
+    <patch_id number="37860476"/>
+    <minimum_opatch_version>12.2.0.1.46</minimum_opatch_version>
+    <unique_patch_id>27607299</unique_patch_id>
+    <cannot_autorollback>false</cannot_autorollback>
+    <not_rollbackable>false</not_rollbackable>
+    <date_of_patch day="4" month="Jul" time="10:23:34 hrs" year="2025" zone="UTC"/>
+    <base_bugs>
+        <bug description="JDK BUNDLE PATCH 19.0.0.0.250715" number="37860476"/>
+    </base_bugs>
+    <required_components>
+        <component internal_name="oracle.jdk" opt_req="O" version="1.8.0.191.0"/>
+        <component internal_name="oracle.jdk" opt_req="O" version="1.8.0.201.0"/>
+        <component internal_name="oracle.jdk" opt_req="O" version="1.8.0.391.11"/>
+    </required_components>
+    <os_platforms>
+        <platform id="226" name="Linux x86-64"/>
+    </os_platforms>
+    <executables/>
+    <instance_shutdown>false</instance_shutdown>
+    <instance_shutdown_message/>
+    <online_rac_installable>true</online_rac_installable>
+    <online_gi_installable>true</online_gi_installable>
+    <ojvm>false</ojvm>
+    <rhp>false</rhp>
+    <two_stage_rolling>false</two_stage_rolling>
+    <ru>false</ru>
+    <ru_version/>
+    <regressed_patch_id/>
+    <run_as_root>false</run_as_root>
+    <sql_migrate>false</sql_migrate>
+    <contains_symlinks>false</contains_symlinks>
+    <wls_prereq_oneoffs/>
+    <prereq_oneoffs/>
+    <overlay_oneoffs>
+        <overlay oneoff_id="29834717"/>
+        <overlay oneoff_id="30087906"/>
+        <overlay oneoff_id="30080447"/>
+        <overlay oneoff_id="30830913"/>
+        <overlay oneoff_id="30125133"/>
+        <overlay oneoff_id="31281355"/>
+        <overlay oneoff_id="30446228"/>
+        <overlay oneoff_id="31771877"/>
+        <overlay oneoff_id="30557433"/>
+        <overlay oneoff_id="31666885"/>
+        <overlay oneoff_id="31204483"/>
+        <overlay oneoff_id="30869156"/>
+        <overlay oneoff_id="31212138"/>
+        <overlay oneoff_id="31667176"/>
+        <overlay oneoff_id="30446054"/>
+        <overlay oneoff_id="32218454"/>
+        <overlay oneoff_id="32923627"/>
+        <overlay oneoff_id="30797938"/>
+        <overlay oneoff_id="32844504"/>
+        <overlay oneoff_id="32904851"/>
+        <overlay oneoff_id="32545013"/>
+        <overlay oneoff_id="32066676"/>
+        <overlay oneoff_id="32819074"/>
+        <overlay oneoff_id="32072711"/>
+        <overlay oneoff_id="32421507"/>
+        <overlay oneoff_id="32441092"/>
+        <overlay oneoff_id="33192793"/>
+        <overlay oneoff_id="34429835"/>
+        <overlay oneoff_id="33210889"/>
+        <overlay oneoff_id="34444812"/>
+        <overlay oneoff_id="37260974"/>
+        <overlay oneoff_id="37642901"/>
+        <overlay oneoff_id="33516456"/>
+        <overlay oneoff_id="34133642"/>
+        <overlay oneoff_id="33806138"/>
+        <overlay oneoff_id="33806152"/>
+        <overlay oneoff_id="34771828"/>
+        <overlay oneoff_id="34765931"/>
+        <overlay oneoff_id="33783771"/>
+        <overlay oneoff_id="34110559"/>
+        <overlay oneoff_id="34119532"/>
+        <overlay oneoff_id="34419443"/>
+        <overlay oneoff_id="36912597"/>
+        <overlay oneoff_id="35943157"/>
+        <overlay oneoff_id="33515361"/>
+        <overlay oneoff_id="33494256"/>
+        <overlay oneoff_id="33153989"/>
+        <overlay oneoff_id="36233263"/>
+        <overlay oneoff_id="35320081"/>
+        <overlay oneoff_id="36582781"/>
+        <overlay oneoff_id="35643107"/>
+        <overlay oneoff_id="37960098"/>
+        <overlay oneoff_id="35042068"/>
+        <overlay oneoff_id="31743771"/>
+        <overlay oneoff_id="30980733"/>
+        <overlay oneoff_id="31301460"/>
+        <overlay oneoff_id="37213431"/>
+        <overlay oneoff_id="33810130"/>
+        <overlay oneoff_id="32918394"/>
+        <overlay oneoff_id="33197296"/>
+        <overlay oneoff_id="34777391"/>
+        <overlay oneoff_id="34422617"/>
+        <overlay oneoff_id="33497160"/>
+        <overlay oneoff_id="34113634"/>
+        <overlay oneoff_id="36538667"/>
+        <overlay oneoff_id="35004974"/>
+        <overlay oneoff_id="35336174"/>
+        <overlay oneoff_id="35949090"/>
+        <overlay oneoff_id="36195566"/>
+        <overlay oneoff_id="36866578"/>
+        <overlay oneoff_id="37542054"/>
+        <overlay oneoff_id="35638318"/>
+        <overlay oneoff_id="32490416"/>
+        <overlay oneoff_id="32162391"/>
+    </overlay_oneoffs>
+    <patch_type value="singleton"/>
+    <patch_language value="en"/>
+    <product_family value="db"/>
+    <patching_model value="one-off"/>
+    <auto>false</auto>
+    <translatable>false</translatable>
+    <application_dirs/>
+    <patch_characteristics>
+        <content_type value="jdk"/>
+    </patch_characteristics>
+</oneoff_inventory>
