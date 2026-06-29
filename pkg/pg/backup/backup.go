@@ -63,17 +63,29 @@ func BuildRestoreCommand(opts RestoreOptions) string {
 	return strings.Join(parts, " ")
 }
 
-// ValidatePITRParams checks confirm gates for PITR.
+// ValidatePITRParams checks confirm gates for PITR. The caller must intend a
+// destructive action (confirm=true) AND restate the target cluster's own name via
+// confirm_cluster and the PITR target timestamp via confirm_timestamp (ADR-0047) —
+// a generic boolean can never authorize this.
 func ValidatePITRParams(params map[string]any) (*PITROptions, error) {
 	if confirmed, _ := params["confirm"].(bool); !confirmed {
 		return nil, fmt.Errorf("confirm gate: set confirm=true to execute PITR")
 	}
-	if dconfirm, _ := params["confirm_destructive"].(bool); !dconfirm {
-		return nil, fmt.Errorf("double-confirm required: PITR is destructive. Set confirm_destructive=true")
-	}
+	clusterName, _ := params["cluster"].(string)
 	targetTime, _ := params["target_time"].(string)
 	if targetTime == "" {
 		return nil, fmt.Errorf("target_time parameter is required for PITR")
+	}
+	confirmCluster, _ := params["confirm_cluster"].(string)
+	confirmTimestamp, _ := params["confirm_timestamp"].(string)
+	if confirmCluster == "" || confirmTimestamp == "" {
+		return nil, fmt.Errorf("identifier confirmation required: PITR is destructive. Restate the cluster name (%q) via confirm_cluster and the target timestamp (%q) via confirm_timestamp to proceed", clusterName, targetTime)
+	}
+	if confirmCluster != clusterName {
+		return nil, fmt.Errorf("identifier confirmation mismatch: confirm_cluster %q does not match target cluster %q", confirmCluster, clusterName)
+	}
+	if confirmTimestamp != targetTime {
+		return nil, fmt.Errorf("identifier confirmation mismatch: confirm_timestamp %q does not match target time %q", confirmTimestamp, targetTime)
 	}
 	return &PITROptions{TargetTime: targetTime}, nil
 }

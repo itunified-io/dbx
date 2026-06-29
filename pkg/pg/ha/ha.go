@@ -94,15 +94,21 @@ FROM pg_stat_replication ORDER BY lag_bytes DESC`
 const sqlTimelineHistory = `
 SELECT pg_control_checkpoint(), pg_current_wal_lsn()::text, pg_is_in_recovery()`
 
-// Failover triggers a CNPG cluster failover. Double-confirm-gated.
+// Failover triggers a CNPG cluster failover. The caller must intend a destructive
+// action (confirm=true) AND restate the target cluster's own name via confirm_cluster
+// (ADR-0047) — a generic boolean can never authorize this.
 func Failover(ctx context.Context, _ pginternal.Querier, k8s *pginternal.K8sClient, params map[string]any) (*FailoverResult, error) {
 	if confirmed, _ := params["confirm"].(bool); !confirmed {
 		return nil, fmt.Errorf("confirm gate: set confirm=true to execute failover")
 	}
-	if dconfirm, _ := params["confirm_destructive"].(bool); !dconfirm {
-		return nil, fmt.Errorf("double-confirm required: failover may cause data loss. Set confirm_destructive=true")
-	}
 	clusterName, _ := params["cluster"].(string)
+	confirmCluster, _ := params["confirm_cluster"].(string)
+	if confirmCluster == "" {
+		return nil, fmt.Errorf("identifier confirmation required: failover may cause data loss. Restate the cluster name (%q) via confirm_cluster to proceed", clusterName)
+	}
+	if confirmCluster != clusterName {
+		return nil, fmt.Errorf("identifier confirmation mismatch: confirm_cluster %q does not match target cluster %q", confirmCluster, clusterName)
+	}
 	targetPod, _ := params["target"].(string)
 
 	patch := map[string]any{

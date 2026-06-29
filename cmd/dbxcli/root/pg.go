@@ -386,12 +386,22 @@ func newPgCrudCmd() *cobra.Command {
 		Use:     "delete",
 		Short:   "Delete rows",
 		Long:    `Delete rows matching the WHERE clause from the specified table.`,
-		Example: `  dbxcli pg crud delete schema=public table=users where="id=1" --target prod-pg`,
+		Example: `  dbxcli pg crud delete schema=public table=users where="id=1" confirm_table=users --target prod-pg`,
 		Args:    cobra.MinimumNArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			params, err := ParseNamedParams(args)
 			if err != nil {
 				return err
+			}
+			// ADR-0047: require the caller to restate the target table name; a
+			// boolean alone must not authorize a destructive delete.
+			table := params["table"]
+			confirmTable := params["confirm_table"]
+			if confirmTable == "" {
+				return fmt.Errorf("identifier confirmation required: DELETE is destructive. Restate the table name (%q) via confirm_table to proceed", table)
+			}
+			if confirmTable != table {
+				return fmt.Errorf("identifier confirmation mismatch: confirm_table %q does not match target table %q", confirmTable, table)
 			}
 			target, _ := cmd.Flags().GetString("target")
 			fmt.Printf("pg crud delete (target=%s, params=%v)\n", target, params)
@@ -1910,12 +1920,22 @@ func newPgRagCmd() *cobra.Command {
 		Use:     "collection-drop",
 		Short:   "Drop vector collection",
 		Long:    `Drop a vector collection and all its data.`,
-		Example: `  dbxcli pg rag collection-drop name=embeddings --target prod-pg`,
+		Example: `  dbxcli pg rag collection-drop name=embeddings confirm_name=embeddings --target prod-pg`,
 		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			params, err := ParseNamedParams(args)
 			if err != nil {
 				return err
+			}
+			// ADR-0047: require the caller to restate the collection name; a
+			// boolean alone must not authorize dropping a collection.
+			name := params["name"]
+			confirmName := params["confirm_name"]
+			if confirmName == "" {
+				return fmt.Errorf("identifier confirmation required: collection-drop is destructive. Restate the collection name (%q) via confirm_name to proceed", name)
+			}
+			if confirmName != name {
+				return fmt.Errorf("identifier confirmation mismatch: confirm_name %q does not match target collection %q", confirmName, name)
 			}
 			target, _ := cmd.Flags().GetString("target")
 			fmt.Printf("pg rag collection-drop (target=%s, params=%v)\n", target, params)
