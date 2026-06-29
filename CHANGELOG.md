@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## v2026.06.29.1 - 2026-06-29
+
+### feat(provision/oracle): orchestrate install primitives from an OracleDatabase (DbSys) manifest
+
+New `dbxcli provision oracle plan <dbsys.yaml>`: reads a `kind: OracleDatabase`
+manifest (infra stacks/<stack>/databases/<dbsys>.yaml) and derives the ordered
+install-primitive sequence across the cluster nodes: asm-label -> grid ->
+root-sh (per node) -> asmca -> dbhome -> root-sh (per node) -> netca -> dbca ->
+pdb. Read-only planner (pkg/provision/oracle) with unit tests; the future
+`apply` subcommand will execute via the primitives + license gate (ADR-0094).
+This is the previously-missing `dbxcli provision oracle` consumer the infra
+OracleDatabase manifests refer to.
+
+
 ## v2026.05.03.2 — 2026-05-03
 
 ### feat(oracle/sql): db sql exec-readwrite (#29) — privileged DDL/DML/PL-SQL via sqlplus / as sysdba
