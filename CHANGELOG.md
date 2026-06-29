@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## v2026.06.29.1 - 2026-06-29
+
+### fix(confirm): enforce identifier restatement for destructive ops (#44, ADR-0047)
+
+Security fix. A destructive/irreversible operation can no longer be authorized by a
+generic boolean (`--confirm` / `confirm=true` / `confirm_destructive=true`). The
+caller must restate the target's own identifier — a factor a boolean cannot bypass.
+
+- `pkg/core/confirm`: `Gate.Check` now returns `ErrConfirmRequired` for
+  `LevelEchoBack`/`LevelDoubleConfirm` regardless of the boolean flag. Only
+  `LevelNone`/`LevelStandard` accept a boolean. The previously-dead
+  `CheckEchoBack`/`CheckDoubleConfirm` (typed identifier restatement) are now the
+  required path for the higher levels.
+- `pkg/pipeline`: stage 5 routes `LevelEchoBack`/`LevelDoubleConfirm` through
+  `CheckEchoBack`/`CheckDoubleConfirm`, requiring `confirm_target` (and
+  `confirm_phrase` = `CONFIRM-<target>` for double-confirm) in `Params`. A bare
+  `ConfirmFlag=true` no longer satisfies these levels.
+- `pkg/pg/crud`: a no-WHERE `Delete` (deletes all rows) now requires
+  `confirm_table` to equal the target table instead of a `confirm_destructive` bool.
+- `pkg/pg/cnpg_dr`: `ReplicaClusterDelete` requires `confirmCluster` to equal the
+  cluster name; `RecoveryExecute` (PITR) requires `confirmCluster` and
+  `confirmTimestamp` to equal the target cluster and timestamp — replacing the
+  `confirmDestructive` bool second factor.
+
 ## v2026.05.03.2 — 2026-05-03
 
 ### feat(oracle/sql): db sql exec-readwrite (#29) — privileged DDL/DML/PL-SQL via sqlplus / as sysdba
