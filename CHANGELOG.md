@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## v2026.06.29.2 - 2026-06-29
+
+### fix(pg): require identifier restatement for DR/HA/PITR + crud/rag CLI (#46, ADR-0047)
+
+Security fix extending ADR-0047 coverage to remaining destructive operations.
+`confirm_destructive=true` booleans are replaced by typed identifier restatement
+at every site — a boolean alone can no longer authorize these operations.
+
+- `pkg/pg/cnpg_dr`: `DRPromote`, `DRDemote` — require `confirm_cluster` to equal
+  `params["cluster"]` (the cluster being promoted/demoted).
+- `pkg/pg/cnpg_dr`: `DRSwitchover` — require `confirm_cluster` to equal
+  `params["primary"]` (the primary cluster being switched over).
+- `pkg/pg/ha`: `Failover` — require `confirm_cluster` to equal `params["cluster"]`.
+- `pkg/pg/backup`: `ValidatePITRParams` — require `confirm_cluster` to equal
+  `params["cluster"]` and `confirm_timestamp` to equal `params["target_time"]`.
+- `cmd/dbxcli/root/pg.go` `pg crud delete` — require `confirm_table` to equal the
+  `table` param before the stub body executes.
+- `cmd/dbxcli/root/pg.go` `pg rag collection-drop` — require `confirm_name` to
+  equal the `name` param before the stub body executes.
+
 ## v2026.06.29.1 - 2026-06-29
 
 ### fix(confirm): enforce identifier restatement for destructive ops (#44, ADR-0047)

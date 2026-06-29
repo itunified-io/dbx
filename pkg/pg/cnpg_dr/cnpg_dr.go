@@ -126,41 +126,59 @@ func DRStatus(ctx context.Context, k8sPrimary, k8sDR *pginternal.K8sClient, para
 	return result, nil
 }
 
-// DRPromote promotes a DR cluster to primary. Double-confirm-gated.
+// DRPromote promotes a DR cluster to primary. The caller must intend a destructive
+// action (confirm=true) AND restate the target cluster's own name via confirm_cluster
+// (ADR-0047) — a generic boolean can never authorize this.
 func DRPromote(_ context.Context, k8sDR *pginternal.K8sClient, params map[string]any) (*DRPromoteResult, error) {
 	if confirmed, _ := params["confirm"].(bool); !confirmed {
 		return nil, fmt.Errorf("confirm gate: set confirm=true to promote DR cluster")
 	}
-	if dconfirm, _ := params["confirm_destructive"].(bool); !dconfirm {
-		return nil, fmt.Errorf("double-confirm required: DR promotion is irreversible. Set confirm_destructive=true")
-	}
 	drName, _ := params["cluster"].(string)
+	confirmCluster, _ := params["confirm_cluster"].(string)
+	if confirmCluster == "" {
+		return nil, fmt.Errorf("identifier confirmation required: DR promotion is irreversible. Restate the cluster name (%q) via confirm_cluster to proceed", drName)
+	}
+	if confirmCluster != drName {
+		return nil, fmt.Errorf("identifier confirmation mismatch: confirm_cluster %q does not match target cluster %q", confirmCluster, drName)
+	}
 	_ = k8sDR // Would patch the cluster to remove replica configuration
 	return &DRPromoteResult{ClusterName: drName, NewRole: "primary"}, nil
 }
 
-// DRDemote demotes a primary cluster to replica. Double-confirm-gated.
+// DRDemote demotes a primary cluster to replica. The caller must intend a destructive
+// action (confirm=true) AND restate the target cluster's own name via confirm_cluster
+// (ADR-0047) — a generic boolean can never authorize this.
 func DRDemote(_ context.Context, _ *pginternal.K8sClient, params map[string]any) (*DRDemoteResult, error) {
 	if confirmed, _ := params["confirm"].(bool); !confirmed {
 		return nil, fmt.Errorf("confirm gate: set confirm=true to demote primary")
 	}
-	if dconfirm, _ := params["confirm_destructive"].(bool); !dconfirm {
-		return nil, fmt.Errorf("double-confirm required: demotion may cause data loss. Set confirm_destructive=true")
-	}
 	name, _ := params["cluster"].(string)
+	confirmCluster, _ := params["confirm_cluster"].(string)
+	if confirmCluster == "" {
+		return nil, fmt.Errorf("identifier confirmation required: demotion may cause data loss. Restate the cluster name (%q) via confirm_cluster to proceed", name)
+	}
+	if confirmCluster != name {
+		return nil, fmt.Errorf("identifier confirmation mismatch: confirm_cluster %q does not match target cluster %q", confirmCluster, name)
+	}
 	return &DRDemoteResult{ClusterName: name, NewRole: "replica"}, nil
 }
 
-// DRSwitchover performs a cross-cluster switchover. Double-confirm-gated.
+// DRSwitchover performs a cross-cluster switchover. The caller must intend a destructive
+// action (confirm=true) AND restate the current primary cluster's own name via
+// confirm_cluster (ADR-0047) — a generic boolean can never authorize this.
 func DRSwitchover(_ context.Context, _, _ *pginternal.K8sClient, params map[string]any) (*DRSwitchResult, error) {
 	if confirmed, _ := params["confirm"].(bool); !confirmed {
 		return nil, fmt.Errorf("confirm gate: set confirm=true to execute DR switchover")
 	}
-	if dconfirm, _ := params["confirm_destructive"].(bool); !dconfirm {
-		return nil, fmt.Errorf("double-confirm required: DR switchover is disruptive. Set confirm_destructive=true")
-	}
 	primary, _ := params["primary"].(string)
 	dr, _ := params["dr"].(string)
+	confirmCluster, _ := params["confirm_cluster"].(string)
+	if confirmCluster == "" {
+		return nil, fmt.Errorf("identifier confirmation required: DR switchover is disruptive. Restate the primary cluster name (%q) via confirm_cluster to proceed", primary)
+	}
+	if confirmCluster != primary {
+		return nil, fmt.Errorf("identifier confirmation mismatch: confirm_cluster %q does not match primary cluster %q", confirmCluster, primary)
+	}
 	return &DRSwitchResult{OldPrimary: primary, NewPrimary: dr}, nil
 }
 

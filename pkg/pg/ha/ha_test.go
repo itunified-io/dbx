@@ -32,15 +32,40 @@ func newFakeK8s() *pginternal.K8sClient {
 	return pginternal.NewK8sClientFromDynamic(client, "cnpg-system")
 }
 
-func TestFailoverRequiresDoubleConfirm(t *testing.T) {
+// ADR-0047: Failover must not proceed on a bare confirm boolean — the caller
+// must restate the target cluster name via confirm_cluster.
+func TestFailoverBooleanOnlyBlocks(t *testing.T) {
 	k8s := newFakeK8s()
 	_, err := ha.Failover(context.Background(), nil, k8s, map[string]any{
-		"cluster":             "pg-cluster",
-		"target":              "pg-cluster-2",
-		"confirm":             true,
-		"confirm_destructive": false,
+		"cluster": "pg-cluster",
+		"target":  "pg-cluster-2",
+		"confirm": true,
+		// no confirm_cluster — must block
 	})
-	assert.ErrorContains(t, err, "double-confirm required")
+	assert.ErrorContains(t, err, "identifier confirmation required")
+}
+
+func TestFailoverWrongClusterBlocks(t *testing.T) {
+	k8s := newFakeK8s()
+	_, err := ha.Failover(context.Background(), nil, k8s, map[string]any{
+		"cluster":         "pg-cluster",
+		"target":          "pg-cluster-2",
+		"confirm":         true,
+		"confirm_cluster": "wrong-cluster",
+	})
+	assert.ErrorContains(t, err, "identifier confirmation mismatch")
+}
+
+func TestFailoverCorrectRestatementPassesGate(t *testing.T) {
+	k8s := newFakeK8s()
+	result, err := ha.Failover(context.Background(), nil, k8s, map[string]any{
+		"cluster":         "pg-cluster",
+		"target":          "pg-cluster-2",
+		"confirm":         true,
+		"confirm_cluster": "pg-cluster",
+	})
+	require.NoError(t, err)
+	assert.Equal(t, "pg-cluster-2", result.NewPrimary)
 }
 
 func TestSwitchoverRequiresConfirm(t *testing.T) {

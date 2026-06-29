@@ -46,24 +46,102 @@ func TestDRStatus(t *testing.T) {
 	assert.True(t, status.InSync)
 }
 
-func TestDRPromoteRequiresDoubleConfirm(t *testing.T) {
+// ADR-0047: DRPromote must not proceed on a bare confirm boolean — the caller
+// must restate the target cluster name via confirm_cluster.
+func TestDRPromoteBooleanOnlyBlocks(t *testing.T) {
 	k8sDR := newFakeK8s("dr-cluster")
 	_, err := cnpg_dr.DRPromote(context.Background(), k8sDR, map[string]any{
-		"cluster":             "dr-cluster",
-		"confirm":             true,
-		"confirm_destructive": false,
+		"cluster": "dr-cluster",
+		"confirm": true,
+		// no confirm_cluster — must block
 	})
-	assert.ErrorContains(t, err, "double-confirm required")
+	assert.ErrorContains(t, err, "identifier confirmation required")
 }
 
-func TestDRSwitchoverRequiresDoubleConfirm(t *testing.T) {
-	_, err := cnpg_dr.DRSwitchover(context.Background(), nil, nil, map[string]any{
-		"primary":             "primary-cluster",
-		"dr":                  "dr-cluster",
-		"confirm":             true,
-		"confirm_destructive": false,
+func TestDRPromoteWrongClusterBlocks(t *testing.T) {
+	k8sDR := newFakeK8s("dr-cluster")
+	_, err := cnpg_dr.DRPromote(context.Background(), k8sDR, map[string]any{
+		"cluster":         "dr-cluster",
+		"confirm":         true,
+		"confirm_cluster": "wrong-cluster",
 	})
-	assert.ErrorContains(t, err, "double-confirm required")
+	assert.ErrorContains(t, err, "identifier confirmation mismatch")
+}
+
+func TestDRPromoteCorrectRestatementPassesGate(t *testing.T) {
+	k8sDR := newFakeK8s("dr-cluster")
+	result, err := cnpg_dr.DRPromote(context.Background(), k8sDR, map[string]any{
+		"cluster":         "dr-cluster",
+		"confirm":         true,
+		"confirm_cluster": "dr-cluster",
+	})
+	require.NoError(t, err)
+	assert.Equal(t, "dr-cluster", result.ClusterName)
+	assert.Equal(t, "primary", result.NewRole)
+}
+
+// ADR-0047: DRDemote must not proceed on a bare confirm boolean.
+func TestDRDemoteBooleanOnlyBlocks(t *testing.T) {
+	_, err := cnpg_dr.DRDemote(context.Background(), nil, map[string]any{
+		"cluster": "primary-cluster",
+		"confirm": true,
+		// no confirm_cluster — must block
+	})
+	assert.ErrorContains(t, err, "identifier confirmation required")
+}
+
+func TestDRDemoteWrongClusterBlocks(t *testing.T) {
+	_, err := cnpg_dr.DRDemote(context.Background(), nil, map[string]any{
+		"cluster":         "primary-cluster",
+		"confirm":         true,
+		"confirm_cluster": "wrong-cluster",
+	})
+	assert.ErrorContains(t, err, "identifier confirmation mismatch")
+}
+
+func TestDRDemoteCorrectRestatementPassesGate(t *testing.T) {
+	result, err := cnpg_dr.DRDemote(context.Background(), nil, map[string]any{
+		"cluster":         "primary-cluster",
+		"confirm":         true,
+		"confirm_cluster": "primary-cluster",
+	})
+	require.NoError(t, err)
+	assert.Equal(t, "primary-cluster", result.ClusterName)
+	assert.Equal(t, "replica", result.NewRole)
+}
+
+// ADR-0047: DRSwitchover must not proceed on a bare confirm boolean — the caller
+// must restate the primary cluster name via confirm_cluster.
+func TestDRSwitchoverBooleanOnlyBlocks(t *testing.T) {
+	_, err := cnpg_dr.DRSwitchover(context.Background(), nil, nil, map[string]any{
+		"primary": "primary-cluster",
+		"dr":      "dr-cluster",
+		"confirm": true,
+		// no confirm_cluster — must block
+	})
+	assert.ErrorContains(t, err, "identifier confirmation required")
+}
+
+func TestDRSwitchoverWrongClusterBlocks(t *testing.T) {
+	_, err := cnpg_dr.DRSwitchover(context.Background(), nil, nil, map[string]any{
+		"primary":         "primary-cluster",
+		"dr":              "dr-cluster",
+		"confirm":         true,
+		"confirm_cluster": "wrong-cluster",
+	})
+	assert.ErrorContains(t, err, "identifier confirmation mismatch")
+}
+
+func TestDRSwitchoverCorrectRestatementPassesGate(t *testing.T) {
+	result, err := cnpg_dr.DRSwitchover(context.Background(), nil, nil, map[string]any{
+		"primary":         "primary-cluster",
+		"dr":              "dr-cluster",
+		"confirm":         true,
+		"confirm_cluster": "primary-cluster",
+	})
+	require.NoError(t, err)
+	assert.Equal(t, "primary-cluster", result.OldPrimary)
+	assert.Equal(t, "dr-cluster", result.NewPrimary)
 }
 
 func TestFencingRequiresConfirm(t *testing.T) {

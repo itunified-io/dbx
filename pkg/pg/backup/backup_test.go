@@ -32,20 +32,47 @@ func TestBuildRestoreCommand(t *testing.T) {
 	assert.Contains(t, cmd, "--dbname=appdb")
 }
 
-func TestPITRRequiresDoubleConfirm(t *testing.T) {
+// ADR-0047: PITR must not proceed on a bare confirm boolean — the caller must
+// restate the cluster name and target timestamp.
+func TestPITRBooleanOnlyBlocks(t *testing.T) {
 	_, err := backup.ValidatePITRParams(map[string]any{
-		"target_time":         "2026-04-10 14:30:00",
-		"confirm":             true,
-		"confirm_destructive": false,
+		"cluster":     "pg-cluster",
+		"target_time": "2026-04-10 14:30:00",
+		"confirm":     true,
+		// no confirm_cluster / confirm_timestamp — must block
 	})
-	assert.ErrorContains(t, err, "double-confirm required")
+	assert.ErrorContains(t, err, "identifier confirmation required")
 }
 
-func TestPITRValidTime(t *testing.T) {
+func TestPITRWrongClusterBlocks(t *testing.T) {
+	_, err := backup.ValidatePITRParams(map[string]any{
+		"cluster":           "pg-cluster",
+		"target_time":       "2026-04-10 14:30:00",
+		"confirm":           true,
+		"confirm_cluster":   "wrong-cluster",
+		"confirm_timestamp": "2026-04-10 14:30:00",
+	})
+	assert.ErrorContains(t, err, "identifier confirmation mismatch")
+}
+
+func TestPITRWrongTimestampBlocks(t *testing.T) {
+	_, err := backup.ValidatePITRParams(map[string]any{
+		"cluster":           "pg-cluster",
+		"target_time":       "2026-04-10 14:30:00",
+		"confirm":           true,
+		"confirm_cluster":   "pg-cluster",
+		"confirm_timestamp": "2026-01-01 00:00:00",
+	})
+	assert.ErrorContains(t, err, "identifier confirmation mismatch")
+}
+
+func TestPITRCorrectRestatementPassesGate(t *testing.T) {
 	opts, err := backup.ValidatePITRParams(map[string]any{
-		"target_time":         "2026-04-10 14:30:00",
-		"confirm":             true,
-		"confirm_destructive": true,
+		"cluster":           "pg-cluster",
+		"target_time":       "2026-04-10 14:30:00",
+		"confirm":           true,
+		"confirm_cluster":   "pg-cluster",
+		"confirm_timestamp": "2026-04-10 14:30:00",
 	})
 	assert.NoError(t, err)
 	assert.Equal(t, "2026-04-10 14:30:00", opts.TargetTime)
