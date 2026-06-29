@@ -9,11 +9,21 @@ All notable changes to this project will be documented in this file.
 New `dbxcli provision oracle plan <dbsys.yaml>`: reads a `kind: OracleDatabase`
 manifest (infra stacks/<stack>/databases/<dbsys>.yaml) and derives the ordered
 install-primitive sequence across the cluster nodes: asm-label -> grid ->
-root-sh (per node) -> asmca -> dbhome -> root-sh (per node) -> netca -> dbca ->
-pdb. Read-only planner (pkg/provision/oracle) with unit tests; the future
-`apply` subcommand will execute via the primitives + license gate (ADR-0094).
-This is the previously-missing `dbxcli provision oracle` consumer the infra
-OracleDatabase manifests refer to.
+root-sh (per node) -> asmca (per diskgroup) -> dbhome -> root-sh (per node) ->
+netca -> dbca -> pdb. This is the previously-missing `dbxcli provision oracle`
+consumer the infra OracleDatabase manifests refer to.
+
+- `provision oracle plan <dbsys.yaml>` — read-only ordered plan (table/json/yaml).
+- `provision oracle apply <dbsys.yaml>` — runs the sequence via the install
+  primitives. DRY-RUN by default (no infra touched, no license); `--execute`
+  runs in order, stops at first error, and is Enterprise-gated
+  (license.RequireBundle, ADR-0094). Secrets/raw-disks/response-files are
+  operator-supplied via flags (--disks, --pdb-admin-password-file, ...), never
+  read from the manifest.
+- New `pkg/provision/oracle`: `LoadManifest`, `Plan`, `BuildSpecs`, `Apply` —
+  the manifest->spec derivation is pure and unit-tested; verified against the
+  real clext6 manifest (14-step RAC plan). E2E execution deferred to a
+  lab-connected run (mcp-proxmox-enterprise + Vault).
 
 
 ## v2026.05.03.2 — 2026-05-03

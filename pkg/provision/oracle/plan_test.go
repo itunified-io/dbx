@@ -39,7 +39,7 @@ func TestPlan_RAC_OrderedSequence(t *testing.T) {
 		t.Fatalf("Plan: %v", err)
 	}
 	want := []string{
-		"asm-label", "grid", "root-sh", "root-sh", "asmca",
+		"asm-label", "grid", "root-sh", "root-sh", "asmca", "asmca", "asmca",
 		"dbhome", "root-sh", "root-sh",
 		"netca", "dbca", "pdb", "pdb",
 	}

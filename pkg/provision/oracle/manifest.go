@@ -47,20 +47,29 @@ type Spec struct {
 	Databases []Database `yaml:"databases"`
 }
 
+// Staging is the on-host root where unzipped Oracle software lives; only
+// the source root is needed to build an install spec (the zip/ru/opatch
+// sub-paths are the installer's concern).
+type Staging struct {
+	Source string `yaml:"source"`
+}
+
 // Grid is the Grid Infrastructure home (present for rac; nil for a
 // single-instance non-ASM deployment).
 type Grid struct {
-	Version  string `yaml:"version"`
-	GridBase string `yaml:"grid_base"`
-	GridHome string `yaml:"grid_home"`
+	Version         string  `yaml:"version"`
+	GridBase        string  `yaml:"grid_base"`
+	GridHome        string  `yaml:"grid_home"`
+	SoftwareStaging Staging `yaml:"software_staging"`
 }
 
 // DBHome is one Oracle Database home. Multiple may exist (e.g. 19c + 23ai).
 type DBHome struct {
-	Name       string `yaml:"name"`
-	Version    string `yaml:"version"`
-	OracleBase string `yaml:"oracle_base"`
-	OracleHome string `yaml:"oracle_home"`
+	Name            string  `yaml:"name"`
+	Version         string  `yaml:"version"`
+	OracleBase      string  `yaml:"oracle_base"`
+	OracleHome      string  `yaml:"oracle_home"`
+	SoftwareStaging Staging `yaml:"software_staging"`
 }
 
 // ASM is cluster-wide ASM storage.
