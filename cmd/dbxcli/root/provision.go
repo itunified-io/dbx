@@ -29,5 +29,6 @@ Use 'dbxcli provision install --help' for install primitives,
 	}
 	cmd.PersistentFlags().String("target", "", "target name (from ~/.dbx/targets/)")
 	cmd.AddCommand(NewInstallCmd())
+	cmd.AddCommand(NewOracleCmd())
 	return cmd
 }
