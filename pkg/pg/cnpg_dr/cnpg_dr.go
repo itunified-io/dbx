@@ -257,13 +257,18 @@ func ReplicaClusterCreate(_ context.Context, _ *pginternal.K8sClient, _ map[stri
 	return fmt.Errorf("replica cluster creation requires cluster spec configuration")
 }
 
-// ReplicaClusterDelete deletes a replica cluster. Double-confirm-gated.
-func ReplicaClusterDelete(_ context.Context, _ *pginternal.K8sClient, _ string, confirm, confirmDestructive bool) error {
+// ReplicaClusterDelete deletes a replica cluster. The caller must intend a
+// destructive action (confirm=true) AND restate the target cluster's own name via
+// confirmCluster (ADR-0047) — a generic boolean can never authorize this.
+func ReplicaClusterDelete(_ context.Context, _ *pginternal.K8sClient, clusterName string, confirm bool, confirmCluster string) error {
 	if !confirm {
 		return fmt.Errorf("confirm gate: set confirm=true to delete replica cluster")
 	}
-	if !confirmDestructive {
-		return fmt.Errorf("double-confirm required: deleting a cluster is irreversible. Set confirm_destructive=true")
+	if confirmCluster == "" {
+		return fmt.Errorf("identifier confirmation required: deleting a cluster is irreversible. Restate the cluster name (%q) via confirm_cluster to proceed", clusterName)
+	}
+	if confirmCluster != clusterName {
+		return fmt.Errorf("identifier confirmation mismatch: confirm_cluster %q does not match target cluster %q", confirmCluster, clusterName)
 	}
 	return fmt.Errorf("replica cluster deletion requires explicit cluster name and namespace")
 }
@@ -288,13 +293,22 @@ func RecoveryDryRun(_ context.Context, _ *pginternal.K8sClient, _ string, target
 	return &DryRunResult{Feasible: true, TargetTime: targetTime}, nil
 }
 
-// RecoveryExecute performs a PITR recovery. Double-confirm-gated.
-func RecoveryExecute(_ context.Context, _ *pginternal.K8sClient, _ string, targetTime string, confirm, confirmDestructive bool) (*RecoveryResult, error) {
+// RecoveryExecute performs a PITR recovery. The caller must intend a destructive
+// action (confirm=true) AND restate the target cluster's own name via confirmCluster
+// and the PITR target timestamp via confirmTimestamp (ADR-0047) — a generic boolean
+// can never authorize this.
+func RecoveryExecute(_ context.Context, _ *pginternal.K8sClient, clusterName string, targetTime string, confirm bool, confirmCluster, confirmTimestamp string) (*RecoveryResult, error) {
 	if !confirm {
 		return nil, fmt.Errorf("confirm gate: set confirm=true to execute recovery")
 	}
-	if !confirmDestructive {
-		return nil, fmt.Errorf("double-confirm required: PITR recovery is destructive. Set confirm_destructive=true")
+	if confirmCluster == "" || confirmTimestamp == "" {
+		return nil, fmt.Errorf("identifier confirmation required: PITR recovery is destructive. Restate the cluster name (%q) via confirm_cluster and the target timestamp (%q) via confirm_timestamp to proceed", clusterName, targetTime)
+	}
+	if confirmCluster != clusterName {
+		return nil, fmt.Errorf("identifier confirmation mismatch: confirm_cluster %q does not match target cluster %q", confirmCluster, clusterName)
+	}
+	if confirmTimestamp != targetTime {
+		return nil, fmt.Errorf("identifier confirmation mismatch: confirm_timestamp %q does not match target time %q", confirmTimestamp, targetTime)
 	}
 	return nil, fmt.Errorf("recovery execution requires cluster configuration")
 }

@@ -4,6 +4,7 @@ package pipeline
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/itunified-io/dbx/pkg/core/audit"
@@ -123,7 +124,7 @@ func (p *Pipeline) Execute(ctx context.Context, req *Request, execFn ExecuteFunc
 
 	// Stage 5: Confirm gate
 	if p.confirmGate != nil {
-		if err := p.confirmGate.Check(req.ConfirmLevel, req.ToolName, targetName(req), req.ConfirmFlag); err != nil {
+		if err := p.confirmStage(req); err != nil {
 			evt.Complete("blocked", err)
 			return nil, err
 		}
@@ -143,6 +144,43 @@ func (p *Pipeline) Execute(ctx context.Context, req *Request, execFn ExecuteFunc
 
 	evt.Complete("success", nil)
 	return &Response{Result: result, Duration: duration}, nil
+}
+
+// confirmStage enforces the confirmation policy (ADR-0047). For LevelNone and
+// LevelStandard a boolean flag is sufficient. For LevelEchoBack and
+// LevelDoubleConfirm the caller MUST restate the target's own identifier (and a
+// second phrase for double-confirm) — a generic boolean can never authorize these.
+// The restated factors are supplied non-interactively via req.Params:
+//   - confirm_target: must equal the target name (echo-back factor)
+//   - confirm_phrase: must equal "CONFIRM-<target>" (double-confirm second factor)
+// Enforcement routes through the gate's CheckEchoBack/CheckDoubleConfirm methods.
+func (p *Pipeline) confirmStage(req *Request) error {
+	name := targetName(req)
+	switch req.ConfirmLevel {
+	case confirm.LevelEchoBack:
+		restated := strings.TrimSpace(req.Params["confirm_target"])
+		if restated == "" {
+			return confirm.ErrConfirmRequired
+		}
+		g := confirm.New(strings.NewReader(restated+"\n"), nil)
+		return g.CheckEchoBack(name, req.ToolName)
+	case confirm.LevelDoubleConfirm:
+		first := strings.TrimSpace(req.Params["confirm_target"])
+		second := strings.TrimSpace(req.Params["confirm_phrase"])
+		if first == "" || second == "" {
+			return confirm.ErrConfirmRequired
+		}
+		g := confirm.New(strings.NewReader(first+"\n"+second+"\n"), nil)
+		return g.CheckDoubleConfirm(name, doubleConfirmPhrase(name), req.ToolName)
+	default:
+		return p.confirmGate.Check(req.ConfirmLevel, req.ToolName, name, req.ConfirmFlag)
+	}
+}
+
+// doubleConfirmPhrase derives the required second factor for a double-confirm
+// operation from the target's own identifier, so it cannot be a static boolean.
+func doubleConfirmPhrase(name string) string {
+	return "CONFIRM-" + name
 }
 
 func (p *Pipeline) checkLicense() error {

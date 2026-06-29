@@ -65,7 +65,8 @@ func Update(ctx context.Context, q pginternal.Querier, params map[string]any) (*
 	return &MutationResult{Operation: "UPDATE", RowsAffected: affected, Table: table}, nil
 }
 
-// Delete performs a confirm-gated DELETE. No-WHERE deletes require double-confirm.
+// Delete performs a confirm-gated DELETE. A no-WHERE delete (all rows) additionally
+// requires the caller to restate the target table name via confirm_table (ADR-0047).
 func Delete(ctx context.Context, q pginternal.Querier, params map[string]any) (*MutationResult, error) {
 	if confirmed, _ := params["confirm"].(bool); !confirmed {
 		return nil, fmt.Errorf("confirm gate: set confirm=true to execute DELETE")
@@ -74,8 +75,14 @@ func Delete(ctx context.Context, q pginternal.Querier, params map[string]any) (*
 	where, _ := params["where"].(string)
 
 	if where == "" {
-		if dconfirm, _ := params["confirm_destructive"].(bool); !dconfirm {
-			return nil, fmt.Errorf("double-confirm required: DELETE without WHERE deletes all rows. Set confirm_destructive=true")
+		// ADR-0047: a no-WHERE DELETE wipes every row. A generic boolean must not
+		// authorize it — the caller must restate the target table's own name.
+		restated, _ := params["confirm_table"].(string)
+		if restated == "" {
+			return nil, fmt.Errorf("identifier confirmation required: DELETE without WHERE deletes all rows. Set confirm_table to the target table name (%q) to proceed", table)
+		}
+		if restated != table {
+			return nil, fmt.Errorf("identifier confirmation mismatch: confirm_table %q does not match target table %q", restated, table)
 		}
 	}
 

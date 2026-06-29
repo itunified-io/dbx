@@ -43,19 +43,59 @@ func TestInsertNoConfirm(t *testing.T) {
 	assert.ErrorContains(t, err, "confirm gate")
 }
 
-func TestDeleteNoWhereDoubleConfirm(t *testing.T) {
+// ADR-0047: a no-WHERE DELETE wipes all rows. A bare confirm boolean must not
+// authorize it — the caller must restate the target table name via confirm_table.
+func TestDeleteNoWhereBooleanOnlyBlocks(t *testing.T) {
+	mock, err := pgxmock.NewPool()
+	require.NoError(t, err)
+	defer mock.Close()
+	// No ExpectExec registered: if any SQL runs, mock.Close/expectations would flag it.
+
+	_, err = crud.Delete(context.Background(), mock, map[string]any{
+		"schema":  "public",
+		"table":   "users",
+		"where":   "",
+		"confirm": true,
+		// no confirm_table
+	})
+	assert.ErrorContains(t, err, "identifier confirmation required")
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestDeleteNoWhereWrongTableBlocks(t *testing.T) {
 	mock, err := pgxmock.NewPool()
 	require.NoError(t, err)
 	defer mock.Close()
 
 	_, err = crud.Delete(context.Background(), mock, map[string]any{
-		"schema":              "public",
-		"table":               "users",
-		"where":               "",
-		"confirm":             true,
-		"confirm_destructive": false,
+		"schema":        "public",
+		"table":         "users",
+		"where":         "",
+		"confirm":       true,
+		"confirm_table": "orders", // wrong table
 	})
-	assert.ErrorContains(t, err, "double-confirm required")
+	assert.ErrorContains(t, err, "identifier confirmation mismatch")
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestDeleteNoWhereCorrectTableProceeds(t *testing.T) {
+	mock, err := pgxmock.NewPool()
+	require.NoError(t, err)
+	defer mock.Close()
+
+	mock.ExpectExec("DELETE FROM \"public\".\"users\"").
+		WillReturnResult(pgxmock.NewResult("DELETE", 9))
+
+	result, err := crud.Delete(context.Background(), mock, map[string]any{
+		"schema":        "public",
+		"table":         "users",
+		"where":         "",
+		"confirm":       true,
+		"confirm_table": "users", // restated identifier matches
+	})
+	require.NoError(t, err)
+	assert.Equal(t, int64(9), result.RowsAffected)
+	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
 func TestDeleteWithWhere(t *testing.T) {

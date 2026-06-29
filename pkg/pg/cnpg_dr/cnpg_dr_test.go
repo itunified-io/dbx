@@ -78,7 +78,43 @@ func TestFencingEnableSuccess(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestRecoveryExecuteRequiresDoubleConfirm(t *testing.T) {
-	_, err := cnpg_dr.RecoveryExecute(context.Background(), nil, "", "2026-04-10 14:30:00", true, false)
-	assert.ErrorContains(t, err, "double-confirm required")
+// ADR-0047: PITR recovery must not proceed on a bare confirm boolean — the caller
+// must restate the target cluster name and PITR timestamp.
+func TestRecoveryExecuteBooleanOnlyBlocks(t *testing.T) {
+	_, err := cnpg_dr.RecoveryExecute(context.Background(), nil, "dr-cluster", "2026-04-10 14:30:00", true, "", "")
+	assert.ErrorContains(t, err, "identifier confirmation required")
+}
+
+func TestRecoveryExecuteWrongClusterBlocks(t *testing.T) {
+	_, err := cnpg_dr.RecoveryExecute(context.Background(), nil, "dr-cluster", "2026-04-10 14:30:00", true, "wrong-cluster", "2026-04-10 14:30:00")
+	assert.ErrorContains(t, err, "identifier confirmation mismatch")
+}
+
+func TestRecoveryExecuteWrongTimestampBlocks(t *testing.T) {
+	_, err := cnpg_dr.RecoveryExecute(context.Background(), nil, "dr-cluster", "2026-04-10 14:30:00", true, "dr-cluster", "2026-01-01 00:00:00")
+	assert.ErrorContains(t, err, "identifier confirmation mismatch")
+}
+
+func TestRecoveryExecuteCorrectRestatementPassesGate(t *testing.T) {
+	// With both factors correct, the gate is satisfied and the function proceeds past
+	// the confirmation to its (stub) execution step.
+	_, err := cnpg_dr.RecoveryExecute(context.Background(), nil, "dr-cluster", "2026-04-10 14:30:00", true, "dr-cluster", "2026-04-10 14:30:00")
+	assert.ErrorContains(t, err, "recovery execution requires cluster configuration")
+}
+
+// ADR-0047: replica cluster deletion must not proceed on a bare confirm boolean —
+// the caller must restate the target cluster name via confirm_cluster.
+func TestReplicaClusterDeleteBooleanOnlyBlocks(t *testing.T) {
+	err := cnpg_dr.ReplicaClusterDelete(context.Background(), nil, "replica-1", true, "")
+	assert.ErrorContains(t, err, "identifier confirmation required")
+}
+
+func TestReplicaClusterDeleteWrongClusterBlocks(t *testing.T) {
+	err := cnpg_dr.ReplicaClusterDelete(context.Background(), nil, "replica-1", true, "replica-2")
+	assert.ErrorContains(t, err, "identifier confirmation mismatch")
+}
+
+func TestReplicaClusterDeleteCorrectClusterPassesGate(t *testing.T) {
+	err := cnpg_dr.ReplicaClusterDelete(context.Background(), nil, "replica-1", true, "replica-1")
+	assert.ErrorContains(t, err, "replica cluster deletion requires explicit cluster name")
 }

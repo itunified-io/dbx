@@ -39,15 +39,25 @@ func New(in io.Reader, out io.Writer) *Gate {
 	return g
 }
 
-// Check validates the confirm level. For LevelStandard, confirmFlag=true bypasses.
+// Check validates the confirm level using only a boolean flag. It is ONLY a valid
+// gate for LevelNone and LevelStandard. For LevelEchoBack and LevelDoubleConfirm a
+// boolean alone can never authorize the operation (ADR-0047): the caller must restate
+// the target's own identifier via CheckEchoBack/CheckDoubleConfirm. Those levels
+// therefore always return ErrConfirmRequired here, regardless of confirmFlag.
 func (g *Gate) Check(level Level, description, targetName string, confirmFlag bool) error {
-	if level == LevelNone {
+	switch level {
+	case LevelNone:
 		return nil
+	case LevelStandard:
+		if confirmFlag {
+			return nil
+		}
+		return ErrConfirmRequired
+	default:
+		// LevelEchoBack and above: a generic boolean must not bypass. Route through
+		// CheckEchoBack/CheckDoubleConfirm with the restated target identifier.
+		return ErrConfirmRequired
 	}
-	if confirmFlag {
-		return nil
-	}
-	return ErrConfirmRequired
 }
 
 // CheckEchoBack prompts the user to type an exact string to confirm.

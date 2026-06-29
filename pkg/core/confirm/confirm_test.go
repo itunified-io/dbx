@@ -26,6 +26,20 @@ func TestStandardConfirmWithoutFlagBlocks(t *testing.T) {
 	assert.ErrorIs(t, err, confirm.ErrConfirmRequired)
 }
 
+// ADR-0047: a generic boolean must never satisfy an EchoBack/DoubleConfirm gate.
+// Check() must refuse these levels regardless of the boolean flag.
+func TestCheckRejectsBooleanForEchoBack(t *testing.T) {
+	gate := confirm.New(nil, nil)
+	err := gate.Check(confirm.LevelEchoBack, "drop table users", "users", true)
+	assert.ErrorIs(t, err, confirm.ErrConfirmRequired)
+}
+
+func TestCheckRejectsBooleanForDoubleConfirm(t *testing.T) {
+	gate := confirm.New(nil, nil)
+	err := gate.Check(confirm.LevelDoubleConfirm, "delete cluster", "prod-cluster", true)
+	assert.ErrorIs(t, err, confirm.ErrConfirmRequired)
+}
+
 func TestEchoBackSuccess(t *testing.T) {
 	input := bytes.NewBufferString("RESIZE USERS 50G\n")
 	output := &bytes.Buffer{}
